@@ -13,7 +13,7 @@ import sys
 
 from buscador_vino.comparador import comparar_precios
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
-from buscador_vino.tabla import imprimir_tabla
+from buscador_vino.tabla import imprimir_mejor_precio, imprimir_tabla
 
 
 def main() -> int:
@@ -47,7 +47,11 @@ def main() -> int:
         )
 
     resultados = comparar_precios(args.vino, fuentes, timeout_total=args.timeout)
-    print(imprimir_tabla(resultados))
+
+    print(imprimir_mejor_precio(resultados))
+    if resultados:
+        print("\nTodas las opciones:")
+        print(imprimir_tabla(resultados))
 
     if args.csv:
         with open(args.csv, "w", newline="", encoding="utf-8") as f:

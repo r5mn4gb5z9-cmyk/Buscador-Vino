@@ -1,8 +1,9 @@
-# Buscador de Vinos — Comparador de precios
+# Buscador de Vinos — dónde comprar más barato
 
-Programa en Python que busca un vino por nombre en varias fuentes (vinotecas,
-bodegas, importador) y muestra una tabla con: **vino, precio, moneda, fuente
-y tipo de fuente**.
+Programa en Python que busca un vino o bodega por nombre en varias fuentes
+(vinotecas, bodegas, importador) y te dice **dónde comprarlo más barato**,
+con el link directo a la página del producto. También muestra el resto de
+las opciones para comparar.
 
 ## Instalación
 
@@ -19,6 +20,10 @@ python main.py "Rutini Malbec"
 Salida:
 
 ```
+Más barato en Bodega Norton (bodega): $ 12.500,00 ARS
+https://www.bodeganorton.com/tienda/producto/rutini-malbec
+
+Todas las opciones:
 Vino          | Precio    | Moneda | Fuente          | Tipo
 --------------+-----------+--------+-----------------+----------
 Rutini Malbec | 12.500,00 | ARS    | Bodega Norton   | bodega

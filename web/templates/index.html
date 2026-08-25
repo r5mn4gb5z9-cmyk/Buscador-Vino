@@ -111,6 +111,41 @@
       color: var(--muted);
     }
     .aviso { color: var(--accent); }
+    .mejor {
+      margin-top: 1.25rem;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .mejor .eyebrow {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      opacity: .85;
+      margin: 0 0 .3rem;
+    }
+    .mejor .vino-nombre { font-weight: 700; font-size: 1.05rem; margin: 0 0 .15rem; }
+    .mejor .fuente-nombre { font-size: .95rem; margin: 0 0 .7rem; }
+    .mejor .precio-grande { font-size: 1.6rem; font-weight: 700; margin: 0 0 .8rem; }
+    .mejor a.comprar {
+      display: inline-block;
+      background: var(--accent-fg);
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      font-size: .9rem;
+    }
+    .otras { margin-top: 1.5rem; }
+    .otras h2 {
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--muted);
+      margin: 0 0 .5rem;
+    }
   </style>
 </head>
 <body>
@@ -128,21 +163,37 @@
 
   {% if buscado %}
     {% if resultados %}
-      <table>
-        <thead>
-          <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th></tr>
-        </thead>
-        <tbody>
-          {% for r in resultados %}
-          <tr>
-            <td>{{ r.vino }}</td>
-            <td>{{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</td>
-            <td>{{ r.fuente }}</td>
-            <td><span class="tipo">{{ r.tipo_fuente }}</span></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      {% set mejor = resultados[0] %}
+      <div class="mejor">
+        <p class="eyebrow">Más barato en</p>
+        <p class="fuente-nombre">{{ mejor.fuente }} ({{ mejor.tipo_fuente }})</p>
+        <p class="vino-nombre">{{ mejor.vino }}</p>
+        <p class="precio-grande">{{ "{:,.2f}".format(mejor.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ mejor.moneda }}</p>
+        {% if mejor.url %}
+        <a class="comprar" href="{{ mejor.url }}" target="_blank" rel="noopener">Ir a comprar →</a>
+        {% endif %}
+      </div>
+
+      {% if resultados|length > 1 %}
+      <div class="otras">
+        <h2>Otras opciones ({{ resultados|length - 1 }})</h2>
+        <table>
+          <thead>
+            <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th></tr>
+          </thead>
+          <tbody>
+            {% for r in resultados[1:] %}
+            <tr>
+              <td>{{ r.vino }}</td>
+              <td>{{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</td>
+              <td>{% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.fuente }}</a>{% else %}{{ r.fuente }}{% endif %}</td>
+              <td><span class="tipo">{{ r.tipo_fuente }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
     {% else %}
       <p class="vacio">
         No se encontraron resultados para "{{ vino }}".

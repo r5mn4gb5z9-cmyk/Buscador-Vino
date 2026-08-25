@@ -7,6 +7,24 @@ def _formatear_precio_ar(valor: float) -> str:
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def imprimir_mejor_precio(resultados: List[ResultadoPrecio]) -> str:
+    """Devuelve un encabezado con dónde comprar más barato.
+
+    Asume que `resultados` ya viene ordenado de menor a mayor precio
+    (así lo entrega `comparar_precios`), así que el primero es el más
+    barato.
+    """
+    if not resultados:
+        return "No se encontraron resultados."
+
+    mejor = resultados[0]
+    precio = _formatear_precio_ar(mejor.precio)
+    linea = f"Más barato en {mejor.fuente} ({mejor.tipo_fuente}): $ {precio} {mejor.moneda}"
+    if mejor.url:
+        linea += f"\n{mejor.url}"
+    return linea
+
+
 def imprimir_tabla(resultados: List[ResultadoPrecio]) -> str:
     """Devuelve una tabla de texto con vino, precio, moneda, fuente y tipo."""
     if not resultados:
