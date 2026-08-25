@@ -53,7 +53,7 @@
       border-radius: 12px;
       padding: 1rem;
     }
-    input[type="text"] {
+    input[type="text"], select {
       font-size: 1rem;
       padding: .7rem .8rem;
       border-radius: 8px;
@@ -150,10 +150,16 @@
 </head>
 <body>
   <h1>🍷 Comparador de precios de vino</h1>
-  <p class="sub">Busca un vino en vinotecas, bodegas e importador y compara precios.</p>
+  <p class="sub">Busca un vino en 10 vinotecas, 10 bodegas y 10 importadoras y te dice dónde comprarlo más barato.</p>
 
   <form method="get" action="/">
     <input type="text" name="vino" placeholder="Ej: Rutini Malbec" value="{{ vino }}" required>
+    <select name="tipo">
+      <option value="" {% if not tipo %}selected{% endif %}>Todas las fuentes (30)</option>
+      <option value="vinoteca" {% if tipo == "vinoteca" %}selected{% endif %}>Solo vinotecas</option>
+      <option value="bodega" {% if tipo == "bodega" %}selected{% endif %}>Solo bodegas</option>
+      <option value="importador" {% if tipo == "importador" %}selected{% endif %}>Solo importadoras</option>
+    </select>
     <label class="demo">
       <input type="checkbox" name="demo" value="1" {% if modo_demo %}checked{% endif %}>
       Modo demo (precios simulados, sin depender de internet)

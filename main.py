@@ -26,7 +26,12 @@ def main() -> int:
     )
     parser.add_argument("--csv", metavar="ARCHIVO", help="Exporta los resultados a un CSV")
     parser.add_argument(
-        "--timeout", type=int, default=20, help="Timeout total en segundos (default: 20)"
+        "--tipo",
+        choices=["vinoteca", "bodega", "importador"],
+        help="Buscar solo en un tipo de fuente (por default busca en las 30)",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=30, help="Timeout total en segundos (default: 30)"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Muestra logs detallados")
     args = parser.parse_args()
@@ -37,12 +42,16 @@ def main() -> int:
     )
 
     fuentes = FUENTES_DEMO if args.demo else FUENTES_REALES
+    if args.tipo:
+        fuentes = [f for f in fuentes if f.tipo == args.tipo]
+
     if not args.demo:
         print(
-            "Nota: las fuentes reales usan scraping HTML con selectores CSS que\n"
-            "pueden requerir ajuste si el sitio cambió de diseño (ver\n"
-            "buscador_vino/fuentes/config.py). Probá con --demo para ver el\n"
-            "programa funcionando sin depender de la red.\n",
+            f"Buscando en {len(fuentes)} fuentes reales (scraping HTML, puede tardar "
+            "un rato). Si una fuente no encuentra nada, puede que necesite ajuste de\n"
+            "selectores (ver buscador_vino/fuentes/config.py y "
+            "scripts/verificar_fuentes.py). Probá con --demo para ver el programa\n"
+            "funcionando sin depender de la red.\n",
             file=sys.stderr,
         )
 

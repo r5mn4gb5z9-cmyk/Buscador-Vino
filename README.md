@@ -35,9 +35,11 @@ Opciones:
 
 - `--demo` — usa fuentes simuladas (sin red), útil para probar el programa
   de punta a punta o para desarrollo/CI.
+- `--tipo vinoteca|bodega|importador` — busca solo en ese tipo de fuente en
+  vez de en las 30.
 - `--csv resultados.csv` — exporta la tabla a CSV.
 - `--timeout N` — timeout total en segundos para esperar a todas las fuentes
-  en paralelo (default 20).
+  en paralelo (default 30).
 - `-v` / `--verbose` — muestra logs de qué fuente falló y por qué.
 
 Probá primero con `--demo`:
@@ -46,66 +48,83 @@ Probá primero con `--demo`:
 python main.py "Rutini Malbec" --demo
 ```
 
-## Fuentes configuradas
+## Fuentes configuradas (30)
 
-En `buscador_vino/fuentes/config.py`:
+En `buscador_vino/fuentes/config.py`, agrupadas por tipo:
 
-| Fuente | Tipo |
-|---|---|
-| 1000 Vinos | vinoteca |
-| La Vinoteca | vinoteca |
-| Bodega Norton | bodega |
-| Familia Zuccardi | bodega |
-| Otto Wein | importador |
+| Vinotecas (10) | Bodegas — venta directa (10) | Importadoras (10) |
+|---|---|---|
+| 1000 Vinos | Bodegas Bianchi | Enotek |
+| Espaciovino | Cava Colomé | Lar de Vinos |
+| Winery | Luigi Bosca | Armesto Almacén |
+| Vinoteca BARI | Bodega Norton | Casa Dionisio Vinoteca |
+| TiendaVinos | Rutini Wines | Rebellion House of Wines |
+| Casa de Vinos Mendoza | Susana Balbo | Lo de Granado |
+| Vinos x Caja | Escorihuela Gascón | Vinoteca Ligier |
+| MercadoDeVinos | Familia Schroeder | Vinos Inc |
+| La Viteca | Achaval Ferrer | Aldos Vinoteca |
+| Bonvivir | Krontiras Wines | Grand Cru |
 
-## ⚠️ Importante: ajustar selectores antes de usar en modo real
+Los nombres y dominios salen de búsquedas reales (no están inventados),
+pero leé la siguiente sección antes de asumir que las 30 andan de una.
+
+## ⚠️ Importante: verificar las fuentes antes de usar en modo real
 
 Cada fuente real (`FuenteScraping`) hace scraping HTML de la página de
-resultados de búsqueda del sitio, usando selectores CSS para extraer nombre
-y precio de cada producto.
+resultados de búsqueda del sitio.
 
-**Estos selectores son una aproximación basada en las plataformas de
-e-commerce típicas (Magento, WooCommerce, Shopify) que suelen usar estos
-sitios, pero no se pudieron verificar en vivo**: el entorno donde se
+**No se pudo confirmar en vivo qué plataforma de e-commerce corre cada uno
+de estos 30 sitios ni sus selectores CSS exactos**: el entorno donde se
 desarrolló este programa tiene la salida de red restringida a un proxy que
 bloquea el acceso a estos dominios, así que nunca se llegó a inspeccionar
-el HTML real de cada uno.
+el HTML real de ninguna búsqueda.
 
-Antes de usarlo en serio:
+Para compensar eso, cada fuente prueba automáticamente hasta 2 patrones de
+URL de búsqueda típicos de las plataformas más usadas en Argentina
+(Magento, WooCommerce, Tiendanube, Shopify, VTEX), y en cada intento usa
+selectores CSS "unión" que cubren las 5 plataformas a la vez (ver
+`buscador_vino/fuentes/plataformas.py`). Esto hace que probablemente
+varias fuentes anden de entrada sin tocar nada, pero no las 30.
 
-1. Corré `python main.py "algún vino" -v` y mirá los warnings — te dicen
-   qué fuente no devolvió resultados.
-2. Abrí la página de búsqueda de esa fuente en el navegador (ej.
-   `https://www.1000vinos.com/catalogsearch/result/?q=malbec`).
+**Primer paso, con conexión a internet real (no en un sandbox restringido):**
+
+```bash
+python scripts/verificar_fuentes.py "malbec"
+```
+
+Te tira un check por fuente: cuáles devolvieron resultados y cuáles no.
+Para una que dio VACÍO:
+
+1. Corré `python scripts/verificar_fuentes.py "malbec" -v` y mirá los
+   logs DEBUG de esa fuente — te dicen qué URLs probó y por qué no
+   matchearon.
+2. Abrí esa URL de búsqueda en el navegador.
 3. Con F12 → inspeccionar, fijate las clases CSS que envuelven cada
    producto, su nombre y su precio.
-4. Actualizá `selector_item`, `selector_nombre`, `selector_precio` (y
-   `selector_link` si hace falta) de esa fuente en
-   `buscador_vino/fuentes/config.py`.
-
-No hace falta tocar ningún otro archivo: la lógica de scraping es genérica.
+4. Ajustá esa fuente en `buscador_vino/fuentes/config.py`: agregá su
+   plataforma correcta a la lista `"plataformas"` (si es una de las 5
+   conocidas), o si no encaja en ninguna, definile selectores propios
+   pasándole `selector_item` / `selector_nombre` / `selector_precio`
+   específicos en vez de los genéricos.
 
 ## Agregar una fuente nueva
 
-Sumá una entrada más a `FUENTES_REALES` en `buscador_vino/fuentes/config.py`:
+Sumá una entrada más a `FUENTES_INFO` en `buscador_vino/fuentes/config.py`:
 
 ```python
-FuenteScraping(
-    nombre="Nombre a mostrar",
-    tipo="vinoteca",  # o "bodega" / "importador"
-    url_busqueda="https://ejemplo.com/buscar?q={query}",
-    base_url="https://ejemplo.com",
-    selector_item="...",     # contenedor de cada resultado
-    selector_nombre="...",   # dentro del item, el nombre del vino
-    selector_precio="...",   # dentro del item, el precio
-),
+{
+    "nombre": "Nombre a mostrar",
+    "tipo": "vinoteca",  # o "bodega" / "importador"
+    "base_url": "https://ejemplo.com",
+    "plataformas": ["tiendanube", "woocommerce"],  # orden de prioridad
+},
 ```
 
-Si el sitio no se puede scrapear por HTML (todo se renderiza con
-JavaScript, tiene una API, etc.), se puede implementar una fuente distinta
-heredando de `FuenteBase` (ver `buscador_vino/fuentes/base.py`) e
-implementando `buscar(consulta) -> List[ResultadoPrecio]` como quieras
-(requests a una API, Selenium/Playwright, lo que corresponda).
+`FUENTES_REALES` y `FUENTES_DEMO` se arman solos a partir de esa lista. Si
+el sitio no encaja en ninguna de las 5 plataformas conocidas (todo se
+renderiza con JavaScript, tiene una API propia, etc.), armá su
+`FuenteScraping` a mano con selectores propios, o implementá una fuente
+distinta heredando de `FuenteBase` (ver `buscador_vino/fuentes/base.py`).
 
 ## Arquitectura
 
@@ -114,13 +133,15 @@ buscador_vino/
   models.py           # ResultadoPrecio (vino, precio, moneda, fuente, tipo, url)
   parsing.py           # normaliza texto de precio ("$ 15.990,50") a float
   comparador.py         # ejecuta todas las fuentes en paralelo y ordena por precio
-  tabla.py             # arma la tabla de texto
+  tabla.py             # arma el resumen "más barato" + la tabla completa
   fuentes/
     base.py            # interfaz FuenteBase
-    scraping.py         # FuenteScraping: scraping HTML genérico y configurable
+    plataformas.py       # patrones de URL y selectores CSS comunes por plataforma
+    scraping.py         # FuenteScraping: prueba patrones de URL hasta encontrar resultados
     mock.py            # FuenteSimulada: fuente de demo sin red
-    config.py           # instancia las fuentes reales y las de demo
+    config.py           # FUENTES_INFO (30 sitios) -> FUENTES_REALES / FUENTES_DEMO
 main.py                # CLI (argparse)
+scripts/verificar_fuentes.py  # diagnóstico: qué fuentes reales andan y cuáles no
 tests/                 # pytest, corren con --demo (sin red)
 ```
 
@@ -168,8 +189,10 @@ Los tests usan `FuenteSimulada`, así que corren sin conexión a internet.
 ## Uso responsable
 
 Este programa hace pedidos HTTP normales (no headless browser, no bypass de
-protecciones) a páginas públicas de búsqueda. Si lo vas a correr seguido o
-sobre muchas fuentes:
+protecciones) a páginas públicas de búsqueda. Con 30 fuentes y hasta 2
+patrones de URL cada una, una sola búsqueda puede implicar hasta ~60
+pedidos HTTP (bastantes menos en la práctica, porque se corta apenas un
+patrón encuentra resultados). Si lo vas a correr seguido:
 
 - Revisá el `robots.txt` y los términos de uso de cada sitio.
 - No lo corras en loops ajustados ni con muchos vinos en simultáneo contra

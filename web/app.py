@@ -28,18 +28,24 @@ app = Flask(__name__)
 def index():
     vino = request.args.get("vino", "").strip()
     modo_demo = request.args.get("demo") == "1"
+    tipo = request.args.get("tipo", "").strip()
+    if tipo not in ("vinoteca", "bodega", "importador"):
+        tipo = ""
     resultados = []
     buscado = False
 
     if vino:
         buscado = True
         fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
-        resultados = comparar_precios(vino, fuentes, timeout_total=20)
+        if tipo:
+            fuentes = [f for f in fuentes if f.tipo == tipo]
+        resultados = comparar_precios(vino, fuentes, timeout_total=30)
 
     return render_template(
         "index.html",
         vino=vino,
         modo_demo=modo_demo,
+        tipo=tipo,
         resultados=resultados,
         buscado=buscado,
     )
