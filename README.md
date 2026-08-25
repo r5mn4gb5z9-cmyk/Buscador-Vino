@@ -123,6 +123,34 @@ Cada fuente corre en su propio hilo (`ThreadPoolExecutor`) y si una falla
 (sitio caído, selector desactualizado, timeout) se ignora sin afectar a las
 demás — el resultado es parcial, no un crash.
 
+## Interfaz web (para abrir desde el celu)
+
+Además del CLI hay una mini app web (Flask) en `web/app.py` con buscador y
+tabla, pensada para verse bien en el navegador del celular.
+
+```bash
+pip install -r requirements.txt
+python web/app.py
+```
+
+Se levanta en `http://0.0.0.0:5000`. Cómo abrirla desde el celu:
+
+- **Corriéndola en tu compu:** fijate la IP local de la compu (`ipconfig`
+  en Windows, `ifconfig`/`ip a` en Mac/Linux — algo como `192.168.0.15`) y
+  entrá desde el celu (misma WiFi) a `http://192.168.0.15:5000`.
+- **Corriéndola directo en el celu con Termux** (ver sección de arriba):
+  abrí `http://127.0.0.1:5000` en el navegador del mismo celu.
+
+Tiene un checkbox "Modo demo" para probarla sin depender de que los
+selectores de scraping estén ajustados.
+
+### Versión de solo-demo, sin instalar nada
+
+Si sólo querés ver la interfaz funcionando ya, sin instalar Python ni nada,
+hay una versión de demostración publicada como página web (con precios
+simulados, igual que el modo `--demo`): pedísela a quien te compartió este
+repo, o generá una nueva con Claude Code a partir de este proyecto.
+
 ## Tests
 
 ```bash
