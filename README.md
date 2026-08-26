@@ -86,6 +86,23 @@ selectores CSS "unión" que cubren las 5 plataformas a la vez (ver
 `buscador_vino/fuentes/plataformas.py`). Esto hace que probablemente
 varias fuentes anden de entrada sin tocar nada, pero no las 30.
 
+Una corrida real (30 fuentes, búsqueda "malbec") dio 12/30 con resultados,
+pero varios de esos 12 eran falsos positivos: el patrón de URL caía en el
+catálogo genérico o la home en vez de una búsqueda real, y el selector
+"unión" agarraba cualquier producto de ahí (una botella de agua, un
+aceite de oliva) o un precio con la oferta y el precio tachado pegados sin
+separador, dando números sin sentido. Por eso `FuenteScraping` ahora:
+
+- Descarta un ítem si su nombre no comparte ninguna palabra con lo
+  buscado (evita mostrar "aceite de oliva" como resultado de "malbec").
+- Descarta un precio fuera de un rango razonable para una botella
+  (500–2.000.000 ARS), y toma el primer número con forma de precio del
+  texto en vez de mezclar varios precios pegados en uno solo.
+
+Con esto, una fuente que antes daba OK con datos falsos ahora
+correctamente da VACÍO (y prueba el siguiente patrón de URL) — es más
+honesto, aunque el conteo de "fuentes OK" baje.
+
 **Primer paso, con conexión a internet real (no en un sandbox restringido):**
 
 ```bash
