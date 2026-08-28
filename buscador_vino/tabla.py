@@ -26,11 +26,14 @@ def imprimir_mejor_precio(resultados: List[ResultadoPrecio]) -> str:
 
 
 def imprimir_tabla(resultados: List[ResultadoPrecio]) -> str:
-    """Devuelve una tabla de texto con vino, precio, moneda, fuente y tipo."""
+    """Devuelve una tabla de texto con vino, precio, moneda, fuente, tipo
+    y el link directo al producto, ordenada de menor a mayor precio (el
+    orden lo define quien arma `resultados`, normalmente
+    `comparar_precios`)."""
     if not resultados:
         return "No se encontraron resultados."
 
-    encabezados = ["Vino", "Precio", "Moneda", "Fuente", "Tipo"]
+    encabezados = ["Vino", "Precio", "Moneda", "Fuente", "Tipo", "Link"]
     filas = [
         [
             r.vino,
@@ -38,6 +41,7 @@ def imprimir_tabla(resultados: List[ResultadoPrecio]) -> str:
             r.moneda,
             r.fuente,
             r.tipo_fuente,
+            r.url or "-",
         ]
         for r in resultados
     ]

@@ -65,9 +65,9 @@ def main() -> int:
     if args.csv:
         with open(args.csv, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Vino", "Precio", "Moneda", "Fuente", "Tipo"])
+            writer.writerow(["Vino", "Precio", "Moneda", "Fuente", "Tipo", "Link"])
             for r in resultados:
-                writer.writerow([r.vino, r.precio, r.moneda, r.fuente, r.tipo_fuente])
+                writer.writerow([r.vino, r.precio, r.moneda, r.fuente, r.tipo_fuente, r.url])
         print(f"\nResultados exportados a {args.csv}")
 
     return 0 if resultados else 1
