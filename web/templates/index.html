@@ -185,15 +185,16 @@
         <h2>Otras opciones ({{ resultados|length - 1 }})</h2>
         <table>
           <thead>
-            <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th></tr>
+            <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th><th>Link</th></tr>
           </thead>
           <tbody>
             {% for r in resultados[1:] %}
             <tr>
               <td>{{ r.vino }}</td>
               <td>{{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</td>
-              <td>{% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.fuente }}</a>{% else %}{{ r.fuente }}{% endif %}</td>
+              <td>{{ r.fuente }}</td>
               <td><span class="tipo">{{ r.tipo_fuente }}</span></td>
+              <td>{% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">Ver →</a>{% else %}-{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
