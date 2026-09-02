@@ -52,4 +52,8 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Puerto configurable: en macOS el 5000 suele estar tomado por el
+    # AirPlay Receiver de Control Center, así que el launcher de escritorio
+    # (ver iniciar_buscador.command) lo levanta en otro puerto por default.
+    puerto = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=puerto, debug=True)
