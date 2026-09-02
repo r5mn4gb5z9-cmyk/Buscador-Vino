@@ -54,8 +54,10 @@ class FuenteScraping(FuenteBase):
     la home en vez de una búsqueda real, y ahí aparecen productos que no
     tienen nada que ver (una botella de agua para "malbec"). Por eso cada
     ítem encontrado se filtra además por relevancia: el nombre tiene que
-    compartir al menos una palabra con lo buscado. Si ningún ítem pasa el
-    filtro, se prueba el siguiente patrón de URL antes de rendirse.
+    contener TODAS las palabras relevantes de lo buscado (ej. "rutini" y
+    "malbec"), no alcanza con una sola, para no mezclar Malbecs de
+    cualquier bodega con lo que se pidió puntualmente. Si ningún ítem pasa
+    el filtro, se prueba el siguiente patrón de URL antes de rendirse.
     """
 
     def __init__(
@@ -130,7 +132,7 @@ class FuenteScraping(FuenteBase):
             if not nombre_vino:
                 continue
 
-            if tokens and not any(t in _normalizar_texto(nombre_vino) for t in tokens):
+            if tokens and not all(t in _normalizar_texto(nombre_vino) for t in tokens):
                 descartados_por_relevancia += 1
                 continue
 
