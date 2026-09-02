@@ -17,6 +17,9 @@ PATRONES_BUSQUEDA = {
     "tiendanube": "{base}/?q={query}",
     "shopify": "{base}/search?q={query}&type=product",
     "vtex": "{base}/{query}?map=ft",
+    # Confirmado en vivo contra elmercadodebebidas.com.ar (Odoo 17): el
+    # buscador de catálogo usa este patrón y devuelve resultados server-side.
+    "odoo": "{base}/shop?search={query}",
 }
 
 SELECTOR_ITEM = ", ".join(
@@ -33,6 +36,7 @@ SELECTOR_ITEM = ", ".join(
         "article.product-item",
         "div.product",
         "li.item-product",
+        "div.oe_product",  # Odoo
     ]
 )
 
@@ -49,6 +53,7 @@ SELECTOR_NOMBRE = ", ".join(
         "a.full-unstyled-link",
         "h3.product-name",
         ".product-title",
+        ".o_wsale_products_item_title",  # Odoo
     ]
 )
 
@@ -64,6 +69,7 @@ SELECTOR_PRECIO = ", ".join(
         ".vtex-store-components-3-x-sellingPriceValue",
         ".precio",
         ".product-price",
+        ".oe_currency_value",  # Odoo
     ]
 )
 
@@ -75,6 +81,7 @@ SELECTOR_LINK = ", ".join(
         "a.full-unstyled-link",
         "a.card__heading",
         "a.js-item-name",
+        "a.oe_product_image_link",  # Odoo
         "a",
     ]
 )

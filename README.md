@@ -36,11 +36,26 @@ Opciones:
 - `--demo` — usa fuentes simuladas (sin red), útil para probar el programa
   de punta a punta o para desarrollo/CI.
 - `--tipo vinoteca|bodega|importador` — busca solo en ese tipo de fuente en
-  vez de en las 30.
+  vez de en todas.
+- `--region "Mendoza"` — busca solo en fuentes de esa región/provincia
+  (coincide por substring, sin distinguir mayúsculas). Ver regiones
+  cubiertas más abajo.
+- `--directorio` — en vez de buscar un precio, lista bodegas/vinotecas
+  boutique que **no** tienen tienda online (combinar con `--region` para
+  filtrar). No hace falta pasar un nombre de vino con esta opción.
 - `--csv resultados.csv` — exporta la tabla a CSV.
 - `--timeout N` — timeout total en segundos para esperar a todas las fuentes
   en paralelo (default 30).
 - `-v` / `--verbose` — muestra logs de qué fuente falló y por qué.
+
+Además de la tabla de precios, si detecta la variedad de uva en la
+búsqueda (Malbec, Cabernet Sauvignon, Bonarda, etc.) agrega una sección
+**"También te puede gustar"** con otros vinos de la misma variedad y
+precio parecido — armada con nuestras propias fuentes, no con Vivino: sus
+términos de servicio prohíben el scraping automatizado y no tienen API
+pública gratuita, así que en vez de eso comparamos variedad + precio
+dentro de las fuentes que ya tenemos (ver `buscador_vino/variedades.py` y
+`elegir_similares` en `buscador_vino/comparador.py`).
 
 Probá primero con `--demo`:
 
@@ -48,9 +63,10 @@ Probá primero con `--demo`:
 python main.py "Rutini Malbec" --demo
 ```
 
-## Fuentes configuradas (30)
+## Fuentes configuradas (55 con tienda online + 31 solo contacto directo)
 
-En `buscador_vino/fuentes/config.py`, agrupadas por tipo:
+En `buscador_vino/fuentes/config.py`, agrupadas por tipo, las 30 fuentes
+"grandes" originales:
 
 | Vinotecas (10) | Bodegas — venta directa (10) | Importadoras (10) |
 |---|---|---|
@@ -67,6 +83,52 @@ En `buscador_vino/fuentes/config.py`, agrupadas por tipo:
 
 Los nombres y dominios salen de búsquedas reales (no están inventados),
 pero leé la siguiente sección antes de asumir que las 30 andan de una.
+
+### Cobertura regional: bodegas boutique y vinotecas chicas (25)
+
+Además de las 30 grandes, `FUENTES_INFO_REGIONALES` en el mismo archivo
+suma 25 bodegas boutique/chicas y vinotecas regionales para ampliar la
+cobertura geográfica más allá de Mendoza/CABA, con tienda online
+confirmada en vivo (no son dominios inventados: se verificaron con
+búsquedas y pedidos HTTP reales durante el desarrollo):
+
+**Mendoza** (Alpasión, Familia Cassone, Altos Las Hormigas, Clos de
+Chacras, Bodega Piedra Negra, Durigutti Family Winemakers, DonVino) ·
+**San Juan** (Merced del Estero, Fabril Alto Verde, Xumek, Putruele) ·
+**Salta** (Bodega El Tránsito, Casa Tukma) · **Catamarca** (Bodega
+Veralma) · **Neuquén** (Bodega Malma) · **Río Negro** (Humberto Canale,
+Bodega y Viñedos Agrestis) · **Córdoba** (Comarca La Matilde) · **La
+Pampa** (Bodega del Desierto) · **Buenos Aires** — Costa y Sierra de la
+Ventana (Bodegas y Viñedos Balcarce, Bodega Puerta del Abra, Bodega Al
+Este/Terrasabbia en Médanos) y provincia en general (El Mercado de
+Bebidas en Mar del Plata, Musa Vinos de Autor y Aromas del Tonel en
+Bahía Blanca).
+
+Filtrá por región con `--region "Salta"` (CLI) o el selector de región en
+la web. No se encontró ninguna bodega/vinoteca con e-commerce propio
+verificable en Entre Ríos, Catamarca capital, Viedma ni Chapadmalal — para
+esas zonas solo hay resultados en el directorio de contacto directo (ver
+abajo). Tampoco se sumaron algunas bodegas boutique confirmadas que usan
+Wix (Finca Sierras Azules, Secreto Patagónico, El Porvenir de Cafayate):
+esas tiendas renderizan el catálogo con JavaScript del lado del cliente,
+así que un scraper de HTML estático como este no les puede leer los
+resultados de búsqueda.
+
+### Bodegas boutique sin tienda online: directorio de contacto directo
+
+Muchas bodegas chicas venden solo por WhatsApp/Instagram, sin carrito de
+compra. En vez de dejarlas afuera, están en
+`buscador_vino/fuentes/directorio.py` (`BODEGAS_SIN_TIENDA`, 31 bodegas y
+vinotecas en Córdoba, Entre Ríos, La Pampa, Salta, La Rioja, Catamarca,
+Neuquén, Río Negro/Viedma, la Costa y Sierra de la Ventana, Mendoza y San
+Juan) y se listan aparte, marcadas como "contactar directo":
+
+```bash
+python main.py --directorio
+python main.py --directorio --region "Salta"
+```
+
+En la web están en `/directorio` (con link desde la página principal).
 
 ## ⚠️ Importante: verificar las fuentes antes de usar en modo real
 
@@ -147,16 +209,19 @@ distinta heredando de `FuenteBase` (ver `buscador_vino/fuentes/base.py`).
 
 ```
 buscador_vino/
-  models.py           # ResultadoPrecio (vino, precio, moneda, fuente, tipo, url)
+  models.py           # ResultadoPrecio y ContactoDirecto (bodegas sin tienda online)
+  texto.py             # normalización de texto compartida (sin tildes/mayúsculas)
   parsing.py           # normaliza texto de precio ("$ 15.990,50") a float
-  comparador.py         # ejecuta todas las fuentes en paralelo y ordena por precio
-  tabla.py             # arma el resumen "más barato" + la tabla completa
+  variedades.py         # detecta la variedad de uva de la búsqueda (Malbec, Cabernet Sauvignon, ...)
+  comparador.py         # ejecuta todas las fuentes en paralelo, ordena por precio y arma "también te puede gustar"
+  tabla.py             # arma el resumen "más barato" + la tabla completa + el directorio
   fuentes/
-    base.py            # interfaz FuenteBase
+    base.py            # interfaz FuenteBase (incluye region)
     plataformas.py       # patrones de URL y selectores CSS comunes por plataforma
     scraping.py         # FuenteScraping: prueba patrones de URL hasta encontrar resultados
     mock.py            # FuenteSimulada: fuente de demo sin red
-    config.py           # FUENTES_INFO (30 sitios) -> FUENTES_REALES / FUENTES_DEMO
+    config.py           # FUENTES_INFO (30 grandes + 25 boutique/regionales) -> FUENTES_REALES / FUENTES_DEMO
+    directorio.py        # BODEGAS_SIN_TIENDA: bodegas boutique sin e-commerce, con contacto directo
 main.py                # CLI (argparse)
 scripts/verificar_fuentes.py  # diagnóstico: qué fuentes reales andan y cuáles no
 tests/                 # pytest, corren con --demo (sin red)

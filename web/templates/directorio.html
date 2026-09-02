@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bodegas sin tienda online</title>
+  <style>
+    :root {
+      --bg: #fbf7f4;
+      --fg: #2a1a1f;
+      --muted: #7a6a6d;
+      --card: #ffffff;
+      --border: #e6dcd8;
+      --accent: #7b1e3a;
+      --accent-fg: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1b1216;
+        --fg: #f2e9e7;
+        --muted: #b6a5a8;
+        --card: #241a1e;
+        --border: #3a2b2f;
+        --accent: #d98aa3;
+        --accent-fg: #241a1e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 1.25rem;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+    h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+    p.sub { color: var(--muted); margin: 0 0 1.25rem; font-size: .9rem; }
+    a.volver { color: var(--accent); text-decoration: none; font-size: .85rem; }
+    select {
+      font-size: 1rem;
+      padding: .7rem .8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--fg);
+      width: 100%;
+      margin: 1rem 0 1.25rem;
+    }
+    .bodega-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .8rem .9rem;
+      margin-bottom: .6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .8rem;
+    }
+    .bodega-card .nombre { font-weight: 700; margin: 0 0 .2rem; }
+    .bodega-card .detalle { font-size: .82rem; color: var(--muted); margin: 0; }
+    .tipo {
+      display: inline-block;
+      font-size: .72rem;
+      padding: .1rem .45rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .bodega-card a.contactar {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .85rem;
+      white-space: nowrap;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: .4rem .7rem;
+    }
+    .vacio { margin-top: 1rem; font-size: .9rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <p><a class="volver" href="/">← Volver al comparador</a></p>
+  <h1>🍷 Bodegas boutique sin tienda online</h1>
+  <p class="sub">
+    Bodegas y vinotecas chicas que no tienen e-commerce propio, así que no
+    entran en la comparación de precios. Se muestran igual acá para
+    contactarlas directo por WhatsApp, Instagram u otro medio.
+  </p>
+
+  <form method="get" action="/directorio">
+    <select name="region" onchange="this.form.submit()">
+      <option value="" {% if not region %}selected{% endif %}>Todas las regiones</option>
+      {% for r in regiones %}
+      <option value="{{ r }}" {% if region == r %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if bodegas %}
+    {% for b in bodegas %}
+    <div class="bodega-card">
+      <div>
+        <p class="nombre">{{ b.nombre }}</p>
+        <p class="detalle"><span class="tipo">{{ b.tipo }}</span> · {{ b.region }} · {{ b.contacto }}</p>
+      </div>
+      {% if b.url %}<a class="contactar" href="{{ b.url }}" target="_blank" rel="noopener">Contactar →</a>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="vacio">No hay bodegas cargadas para esa región todavía.</p>
+  {% endif %}
+</body>
+</html>

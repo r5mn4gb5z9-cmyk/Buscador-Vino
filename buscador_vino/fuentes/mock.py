@@ -14,9 +14,10 @@ class FuenteSimulada(FuenteBase):
     de la estructura HTML real de cada sitio.
     """
 
-    def __init__(self, nombre: str, tipo: str, factor: float = 1.0):
+    def __init__(self, nombre: str, tipo: str, factor: float = 1.0, region: str = ""):
         self.nombre = nombre
         self.tipo = tipo
+        self.region = region
         self.factor = factor
 
     def buscar(self, consulta: str) -> List[ResultadoPrecio]:

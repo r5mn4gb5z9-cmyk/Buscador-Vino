@@ -67,9 +67,11 @@ class FuenteScraping(FuenteBase):
         selector_link: Optional[str] = None,
         timeout: int = 10,
         max_resultados: int = 12,
+        region: str = "",
     ):
         self.nombre = nombre
         self.tipo = tipo
+        self.region = region
         self.base_url = base_url.rstrip("/")
         self.patrones_busqueda = patrones_busqueda
         self.selector_item = selector_item

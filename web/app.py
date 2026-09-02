@@ -21,9 +21,12 @@ from flask import Flask, render_template, request
 
 from buscador_vino.comparador import comparar_precios, elegir_similares
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
+from buscador_vino.fuentes.directorio import BODEGAS_SIN_TIENDA
 from buscador_vino.variedades import detectar_variedad
 
 app = Flask(__name__)
+
+REGIONES = sorted({f.region for f in FUENTES_REALES if f.region})
 
 
 @app.route("/", methods=["GET"])
@@ -33,6 +36,9 @@ def index():
     tipo = request.args.get("tipo", "").strip()
     if tipo not in ("vinoteca", "bodega", "importador"):
         tipo = ""
+    region = request.args.get("region", "").strip()
+    if region not in REGIONES:
+        region = ""
     resultados = []
     similares = []
     variedad = None
@@ -43,6 +49,8 @@ def index():
         fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
         if tipo:
             fuentes = [f for f in fuentes if f.tipo == tipo]
+        if region:
+            fuentes = [f for f in fuentes if f.region == region]
 
         variedad = detectar_variedad(vino)
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -60,10 +68,27 @@ def index():
         vino=vino,
         modo_demo=modo_demo,
         tipo=tipo,
+        region=region,
+        regiones=REGIONES,
         resultados=resultados,
         similares=similares,
         variedad=variedad,
         buscado=buscado,
+    )
+
+
+@app.route("/directorio", methods=["GET"])
+def directorio():
+    region = request.args.get("region", "").strip()
+    bodegas = BODEGAS_SIN_TIENDA
+    if region:
+        bodegas = [b for b in bodegas if b.region == region]
+
+    return render_template(
+        "directorio.html",
+        bodegas=bodegas,
+        region=region,
+        regiones=sorted({b.region for b in BODEGAS_SIN_TIENDA}),
     )
 
 

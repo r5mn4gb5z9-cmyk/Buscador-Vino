@@ -181,10 +181,16 @@
   <form method="get" action="/">
     <input type="text" name="vino" placeholder="Ej: Rutini Malbec" value="{{ vino }}" required>
     <select name="tipo">
-      <option value="" {% if not tipo %}selected{% endif %}>Todas las fuentes (30)</option>
+      <option value="" {% if not tipo %}selected{% endif %}>Todas las fuentes</option>
       <option value="vinoteca" {% if tipo == "vinoteca" %}selected{% endif %}>Solo vinotecas</option>
       <option value="bodega" {% if tipo == "bodega" %}selected{% endif %}>Solo bodegas</option>
       <option value="importador" {% if tipo == "importador" %}selected{% endif %}>Solo importadoras</option>
+    </select>
+    <select name="region">
+      <option value="" {% if not region %}selected{% endif %}>Todas las regiones</option>
+      {% for r in regiones %}
+      <option value="{{ r }}" {% if region == r %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
     </select>
     <label class="demo">
       <input type="checkbox" name="demo" value="1" {% if modo_demo %}checked{% endif %}>
@@ -261,5 +267,10 @@
   {% if not modo_demo and buscado %}
     <p class="aviso">⚠️ Estás en modo real: los precios vienen de scraping HTML que puede requerir ajustes (ver README del repo).</p>
   {% endif %}
+
+  <p class="sub" style="margin-top: 2rem;">
+    ¿Buscás una bodega boutique chica que todavía no tiene tienda online?
+    <a href="/directorio">Ver directorio de bodegas para contactar directo →</a>
+  </p>
 </body>
 </html>

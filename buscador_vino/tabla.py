@@ -1,6 +1,6 @@
 from typing import List
 
-from .models import ResultadoPrecio
+from .models import ContactoDirecto, ResultadoPrecio
 
 
 def _formatear_precio_ar(valor: float) -> str:
@@ -44,6 +44,32 @@ def imprimir_tabla(resultados: List[ResultadoPrecio]) -> str:
             r.url or "-",
         ]
         for r in resultados
+    ]
+
+    anchos = [
+        max(len(encabezados[i]), max((len(fila[i]) for fila in filas), default=0))
+        for i in range(len(encabezados))
+    ]
+
+    def formatear_fila(valores):
+        return " | ".join(v.ljust(anchos[i]) for i, v in enumerate(valores))
+
+    separador = "-+-".join("-" * a for a in anchos)
+    lineas = [formatear_fila(encabezados), separador]
+    lineas.extend(formatear_fila(fila) for fila in filas)
+    return "\n".join(lineas)
+
+
+def imprimir_directorio(bodegas: List[ContactoDirecto]) -> str:
+    """Devuelve una tabla de texto con bodegas/vinotecas boutique que no
+    tienen tienda online, para mostrarlas igual con su contacto directo."""
+    if not bodegas:
+        return "No se encontraron bodegas/vinotecas sin tienda online para ese filtro."
+
+    encabezados = ["Nombre", "Tipo", "Región", "Contacto", "Link"]
+    filas = [
+        [b.nombre, b.tipo, b.region, b.contacto, b.url or "-"]
+        for b in bodegas
     ]
 
     anchos = [

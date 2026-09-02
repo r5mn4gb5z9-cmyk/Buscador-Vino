@@ -10,6 +10,7 @@ class FuenteBase(ABC):
 
     nombre: str = "Fuente"
     tipo: str = "otro"  # "vinoteca" | "bodega" | "importador"
+    region: str = ""  # provincia/zona, ej. "Mendoza", "Salta" — "" si no se investigó
 
     @abstractmethod
     def buscar(self, consulta: str) -> List[ResultadoPrecio]:

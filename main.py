@@ -14,13 +14,16 @@ from concurrent.futures import ThreadPoolExecutor
 
 from buscador_vino.comparador import comparar_precios, elegir_similares
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
-from buscador_vino.tabla import imprimir_mejor_precio, imprimir_tabla
+from buscador_vino.fuentes.directorio import BODEGAS_SIN_TIENDA
+from buscador_vino.tabla import imprimir_directorio, imprimir_mejor_precio, imprimir_tabla
 from buscador_vino.variedades import detectar_variedad
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compara precios de un vino en varias fuentes.")
-    parser.add_argument("vino", help="Nombre del vino a buscar, ej: 'Rutini Malbec'")
+    parser.add_argument(
+        "vino", nargs="?", help="Nombre del vino a buscar, ej: 'Rutini Malbec' (no hace falta con --directorio)"
+    )
     parser.add_argument(
         "--demo",
         action="store_true",
@@ -30,7 +33,16 @@ def main() -> int:
     parser.add_argument(
         "--tipo",
         choices=["vinoteca", "bodega", "importador"],
-        help="Buscar solo en un tipo de fuente (por default busca en las 30)",
+        help="Buscar solo en un tipo de fuente (por default busca en todas)",
+    )
+    parser.add_argument(
+        "--region",
+        help="Buscar solo en fuentes de esta región (ej. 'Mendoza', 'Salta'); coincide por substring, sin distinguir mayúsculas",
+    )
+    parser.add_argument(
+        "--directorio",
+        action="store_true",
+        help="En vez de buscar un precio, lista bodegas/vinotecas boutique sin tienda online (usar junto con --region para filtrar)",
     )
     parser.add_argument(
         "--timeout", type=int, default=30, help="Timeout total en segundos (default: 30)"
@@ -43,9 +55,21 @@ def main() -> int:
         format="%(levelname)s %(name)s: %(message)s",
     )
 
+    if args.directorio:
+        bodegas = BODEGAS_SIN_TIENDA
+        if args.region:
+            bodegas = [b for b in bodegas if args.region.lower() in b.region.lower()]
+        print(imprimir_directorio(bodegas))
+        return 0 if bodegas else 1
+
+    if not args.vino:
+        parser.error("hace falta el nombre de un vino para buscar (o usar --directorio)")
+
     fuentes = FUENTES_DEMO if args.demo else FUENTES_REALES
     if args.tipo:
         fuentes = [f for f in fuentes if f.tipo == args.tipo]
+    if args.region:
+        fuentes = [f for f in fuentes if args.region.lower() in f.region.lower()]
 
     if not args.demo:
         print(

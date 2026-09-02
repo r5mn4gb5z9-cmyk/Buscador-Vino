@@ -74,6 +74,64 @@ FUENTES_INFO = [
     {"nombre": "Grand Cru", "tipo": "importador", "base_url": "https://www.grandcru.com.ar", "plataformas": ["vtex", "tiendanube"]},
 ]
 
+# Ampliación de cobertura a bodegas boutique/chicas y vinotecas regionales
+# fuera de las grandes marcas de arriba, investigadas y verificadas en vivo
+# (WebSearch + WebFetch + requests reales, no son dominios inventados) para
+# cubrir Mendoza, San Juan, Salta, Catamarca, La Rioja, Neuquén, Río Negro,
+# Córdoba, La Pampa y la "Costa y Sierra de la Ventana" bonaerense (Chapadmalal,
+# Balcarce, Sierra de la Ventana, Médanos, Coronel Pringles). No se encontró
+# ninguna bodega/vinoteca con e-commerce propio verificable en Entre Ríos,
+# Catamarca capital, Viedma ni Chapadmalal — esas regiones solo aportaron
+# resultados para BODEGAS_SIN_TIENDA (ver fuentes/directorio.py).
+#
+# Cada una tiene "region" para poder filtrar (--region en el CLI, selector en
+# la web). Se probaron todas contra la red real antes de sumarlas: algunas
+# devuelven vacío para consultas genéricas como "malbec" porque son bodegas
+# de varietales fríos (Pinot Noir, Sauvignon Blanc, Chardonnay) típicos de
+# Patagonia/costa bonaerense, no porque el scraping esté roto — correr
+# scripts/verificar_fuentes.py con una consulta acorde (ej. "pinot") lo
+# confirma. Xumek (San Juan) tiene el certificado SSL vencido del lado de
+# ellos: va a arrancar a andar solo cuando lo renueven.
+FUENTES_INFO_REGIONALES = [
+    # --- Mendoza (bodegas boutique + 1 vinoteca de autor) -----------------
+    {"nombre": "Alpasión", "tipo": "bodega", "region": "Mendoza", "base_url": "https://shop.alpasion.com", "plataformas": ["woocommerce", "tiendanube"]},
+    {"nombre": "Familia Cassone", "tipo": "bodega", "region": "Mendoza", "base_url": "https://familiacassone.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Altos Las Hormigas", "tipo": "bodega", "region": "Mendoza", "base_url": "https://www.tiendaaltoslashormigas.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Clos de Chacras", "tipo": "bodega", "region": "Mendoza", "base_url": "https://closdechacras.mitiendanube.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Bodega Piedra Negra", "tipo": "bodega", "region": "Mendoza", "base_url": "https://tienda.bodegapiedranegra.com", "plataformas": ["shopify"]},
+    {"nombre": "Durigutti Family Winemakers", "tipo": "bodega", "region": "Mendoza", "base_url": "https://tienda.durigutti.com", "plataformas": ["woocommerce"]},
+    {"nombre": "DonVino", "tipo": "vinoteca", "region": "Mendoza", "base_url": "https://donvino.com.ar", "plataformas": ["woocommerce"]},
+    # --- San Juan (bodegas boutique) --------------------------------------
+    {"nombre": "Bodega Merced del Estero", "tipo": "bodega", "region": "San Juan", "base_url": "https://merceddelestero.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Fabril Alto Verde", "tipo": "bodega", "region": "San Juan", "base_url": "https://www.fabrilaltoverde.com.ar", "plataformas": ["woocommerce"]},
+    {"nombre": "Xumek", "tipo": "bodega", "region": "San Juan", "base_url": "https://xumek.com.ar", "plataformas": ["woocommerce"]},
+    {"nombre": "Bodega Putruele", "tipo": "bodega", "region": "San Juan", "base_url": "https://bodegaputruele.com", "plataformas": ["woocommerce"]},
+    # --- Salta (bodegas boutique de altura, Cafayate) ----------------------
+    {"nombre": "Bodega El Tránsito", "tipo": "bodega", "region": "Salta", "base_url": "https://shop.bodegaeltransito.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Casa Tukma", "tipo": "bodega", "region": "Salta", "base_url": "https://casatukma.com", "plataformas": ["shopify"]},
+    # --- Catamarca (bodega boutique, Tinogasta) ----------------------------
+    {"nombre": "Bodega Veralma", "tipo": "bodega", "region": "Catamarca", "base_url": "https://www.tiendaveralma.com.ar", "plataformas": ["tiendanube"]},
+    # --- Neuquén (bodega boutique, San Patricio del Chañar) ----------------
+    {"nombre": "Bodega Malma", "tipo": "bodega", "region": "Neuquén", "base_url": "https://shop.bodegamalma.com.ar", "plataformas": ["shopify"]},
+    # --- Río Negro (bodegas boutique/regionales, Alto Valle) ---------------
+    {"nombre": "Bodega Humberto Canale", "tipo": "bodega", "region": "Río Negro", "base_url": "https://shop.bodegahcanale.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Bodega y Viñedos Agrestis", "tipo": "bodega", "region": "Río Negro", "base_url": "https://www.bodegaagrestis.com.ar", "plataformas": ["tiendanube"]},
+    # --- Córdoba (bodega boutique, Traslasierra) ----------------------------
+    {"nombre": "Comarca La Matilde", "tipo": "bodega", "region": "Córdoba", "base_url": "https://www.comarcalamatilde.com.ar", "plataformas": ["woocommerce"]},
+    # --- La Pampa (bodega boutique, 25 de Mayo) -----------------------------
+    {"nombre": "Bodega del Desierto", "tipo": "bodega", "region": "La Pampa", "base_url": "https://store.bodegadeldesierto.com.ar", "plataformas": ["tiendanube"]},
+    # --- Buenos Aires: Costa y Sierra de la Ventana -------------------------
+    {"nombre": "Bodegas y Viñedos Balcarce", "tipo": "bodega", "region": "Buenos Aires (Balcarce)", "base_url": "https://bodegasbalcarce.com.ar", "plataformas": ["woocommerce"]},
+    {"nombre": "Bodega Puerta del Abra", "tipo": "bodega", "region": "Buenos Aires (Balcarce)", "base_url": "https://tienda.puertadelabra.com.ar", "plataformas": ["tiendanube"]},
+    {"nombre": "Bodega Al Este (Terrasabbia)", "tipo": "bodega", "region": "Buenos Aires (Médanos)", "base_url": "https://terrasabbia.mitiendanube.com", "plataformas": ["tiendanube"]},
+    # --- Buenos Aires provincia (vinotecas/distribuidores fuera de CABA/GBA) -
+    {"nombre": "El Mercado de Bebidas", "tipo": "vinoteca", "region": "Buenos Aires (Mar del Plata)", "base_url": "https://www.elmercadodebebidas.com.ar", "plataformas": ["odoo"]},
+    {"nombre": "Musa Vinos de Autor", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://musavinos2.mitiendanube.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Aromas del Tonel", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://aromasdeltonel.mitiendanube.com", "plataformas": ["tiendanube"]},
+]
+
+FUENTES_INFO = FUENTES_INFO + FUENTES_INFO_REGIONALES
+
 
 def _factor_demo(nombre: str) -> float:
     """Factor determinista (mismo nombre -> mismo factor) para que el modo
@@ -93,11 +151,17 @@ FUENTES_REALES = [
         selector_nombre=SELECTOR_NOMBRE,
         selector_precio=SELECTOR_PRECIO,
         selector_link=SELECTOR_LINK,
+        region=info.get("region", ""),
     )
     for info in FUENTES_INFO
 ]
 
 FUENTES_DEMO = [
-    FuenteSimulada(f"{info['nombre']} (demo)", info["tipo"], factor=_factor_demo(info["nombre"]))
+    FuenteSimulada(
+        f"{info['nombre']} (demo)",
+        info["tipo"],
+        factor=_factor_demo(info["nombre"]),
+        region=info.get("region", ""),
+    )
     for info in FUENTES_INFO
 ]
