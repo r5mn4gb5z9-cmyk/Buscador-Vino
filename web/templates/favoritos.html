@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mis favoritos</title>
+  <style>
+    :root {
+      --bg: #fbf7f4;
+      --fg: #2a1a1f;
+      --muted: #7a6a6d;
+      --card: #ffffff;
+      --border: #e6dcd8;
+      --accent: #7b1e3a;
+      --accent-fg: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1b1216;
+        --fg: #f2e9e7;
+        --muted: #b6a5a8;
+        --card: #241a1e;
+        --border: #3a2b2f;
+        --accent: #d98aa3;
+        --accent-fg: #241a1e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 1.25rem;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+    h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+    p.sub { color: var(--muted); margin: 0 0 1.25rem; font-size: .9rem; }
+    a.volver { color: var(--accent); text-decoration: none; font-size: .85rem; }
+    form.agregar {
+      display: flex;
+      gap: .5rem;
+      margin: 1rem 0 1.5rem;
+    }
+    form.agregar input[type="text"] {
+      flex: 1;
+      font-size: 1rem;
+      padding: .7rem .8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--fg);
+    }
+    form.agregar button {
+      font-size: .95rem;
+      padding: .7rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    label.demo {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .favorito-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .8rem .9rem;
+      margin-bottom: .6rem;
+    }
+    .favorito-card .fila-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: .6rem;
+    }
+    .favorito-card .nombre { font-weight: 700; margin: 0 0 .3rem; }
+    .favorito-card .encontrado { font-size: .85rem; margin: 0 0 .15rem; }
+    .favorito-card .precio { font-weight: 700; color: var(--accent); }
+    .favorito-card .detalle { font-size: .8rem; color: var(--muted); margin: 0; }
+    .favorito-card .sin-resultados { font-size: .85rem; color: var(--muted); font-style: italic; }
+    .favorito-card a.ver { color: var(--accent); text-decoration: none; font-weight: 700; font-size: .82rem; }
+    form.quitar button {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: .3rem .6rem;
+      font-size: .78rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .vacio { margin-top: 1rem; font-size: .9rem; color: var(--muted); }
+    .tipo {
+      display: inline-block;
+      font-size: .72rem;
+      padding: .1rem .45rem;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <p><a class="volver" href="/">← Volver al comparador</a></p>
+  <h1>⭐ Mis favoritos</h1>
+  <p class="sub">
+    Guardá el nombre de un vino o una bodega que te gusta y cada vez que abrís
+    esta página te traemos automáticamente el precio más barato disponible
+    en todo el mercado.
+  </p>
+
+  <form class="agregar" method="post" action="/favoritos/agregar">
+    <input type="text" name="nombre" placeholder="Ej: Rutini Malbec, o Bodega Chacra" required>
+    <button type="submit">Agregar</button>
+    {% if modo_demo %}<input type="hidden" name="demo" value="1">{% endif %}
+  </form>
+
+  <form method="get" action="/favoritos">
+    <label class="demo">
+      <input type="checkbox" name="demo" value="1" onchange="this.form.submit()" {% if modo_demo %}checked{% endif %}>
+      Modo demo (precios simulados, sin depender de internet)
+    </label>
+  </form>
+
+  {% if not favoritos %}
+    <p class="vacio">Todavía no guardaste ningún favorito.</p>
+  {% else %}
+    {% for nombre_favorito, resultados in resultados_por_favorito %}
+    <div class="favorito-card">
+      <div class="fila-top">
+        <div>
+          <p class="nombre">{{ nombre_favorito }}</p>
+          {% if resultados %}
+            {% set mejor = resultados[0] %}
+            <p class="encontrado">{{ mejor.vino }}</p>
+            <p class="detalle">
+              <span class="precio">{{ "{:,.2f}".format(mejor.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ mejor.moneda }}</span>
+              · {{ mejor.fuente }} · <span class="tipo">{{ mejor.tipo_fuente }}</span>
+              {% if mejor.envio_nacional %} · 🚚 envío a todo el país{% endif %}
+              {% if resultados|length > 1 %} · +{{ resultados|length - 1 }} opción(es) más{% endif %}
+            </p>
+          {% else %}
+            <p class="sin-resultados">Sin resultados por ahora.</p>
+          {% endif %}
+        </div>
+        {% if resultados and resultados[0].url %}
+        <a class="ver" href="{{ resultados[0].url }}" target="_blank" rel="noopener">Ver →</a>
+        {% endif %}
+      </div>
+      <form class="quitar" method="post" action="/favoritos/quitar" style="margin-top:.6rem;">
+        <input type="hidden" name="nombre" value="{{ nombre_favorito }}">
+        <button type="submit">Quitar de favoritos</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% endif %}
+</body>
+</html>

@@ -1,5 +1,5 @@
 import hashlib
-from typing import List
+from typing import List, Optional
 
 from ..models import ResultadoPrecio
 from .base import FuenteBase
@@ -14,10 +14,18 @@ class FuenteSimulada(FuenteBase):
     de la estructura HTML real de cada sitio.
     """
 
-    def __init__(self, nombre: str, tipo: str, factor: float = 1.0, region: str = ""):
+    def __init__(
+        self,
+        nombre: str,
+        tipo: str,
+        factor: float = 1.0,
+        region: str = "",
+        envio_nacional: Optional[bool] = None,
+    ):
         self.nombre = nombre
         self.tipo = tipo
         self.region = region
+        self.envio_nacional = envio_nacional
         self.factor = factor
 
     def buscar(self, consulta: str) -> List[ResultadoPrecio]:
@@ -32,5 +40,6 @@ class FuenteSimulada(FuenteBase):
                 fuente=self.nombre,
                 tipo_fuente=self.tipo,
                 url="https://ejemplo.local/demo",
+                envio_nacional=self.envio_nacional,
             )
         ]

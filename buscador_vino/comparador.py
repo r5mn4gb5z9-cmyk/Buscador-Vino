@@ -1,6 +1,6 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
-from typing import List
+from typing import List, Tuple
 
 from .fuentes.base import FuenteBase
 from .models import ResultadoPrecio
@@ -68,3 +68,18 @@ def elegir_similares(
     similares = candidatos[:max_resultados]
     similares.sort(key=lambda r: r.precio)
     return similares
+
+
+def buscar_favoritos(
+    favoritos: List[str], fuentes: List[FuenteBase], timeout_total: int = 20
+) -> List[Tuple[str, List[ResultadoPrecio]]]:
+    """Busca cada nombre de `favoritos` en `fuentes` y devuelve, para cada
+    uno, todos los resultados encontrados (ya ordenados de menor a mayor
+    precio por `comparar_precios`; el primero es el más barato).
+
+    Los favoritos se buscan uno por uno, no todos en simultáneo: cada
+    búsqueda ya dispara un pedido HTTP a cada fuente en paralelo, así que
+    lanzar varios favoritos a la vez multiplicaría esa carga sobre los
+    mismos sitios (ver "Uso responsable" en el README).
+    """
+    return [(nombre, comparar_precios(nombre, fuentes, timeout_total)) for nombre in favoritos]

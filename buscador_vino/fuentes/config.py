@@ -41,37 +41,37 @@ from .scraping import FuenteScraping
 FUENTES_INFO = [
     # --- Vinotecas (10) --------------------------------------------------
     {"nombre": "1000 Vinos", "tipo": "vinoteca", "base_url": "https://www.1000vinos.com", "plataformas": ["magento", "tiendanube"]},
-    {"nombre": "Espaciovino", "tipo": "vinoteca", "base_url": "https://www.espaciovino.com.ar", "plataformas": ["vtex", "magento"]},
+    {"nombre": "Espaciovino", "tipo": "vinoteca", "base_url": "https://www.espaciovino.com.ar", "envio_nacional": True, "plataformas": ["vtex", "magento"]},
     {"nombre": "Winery", "tipo": "vinoteca", "base_url": "https://www.winery.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Vinoteca BARI", "tipo": "vinoteca", "base_url": "https://www.bari.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "TiendaVinos", "tipo": "vinoteca", "base_url": "https://www.tiendavinos.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Casa de Vinos Mendoza", "tipo": "vinoteca", "base_url": "https://casadevinosmendoza.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Vinos x Caja", "tipo": "vinoteca", "base_url": "https://www.vinosxcaja.com.ar", "plataformas": ["tiendanube", "shopify"]},
+    {"nombre": "Vinoteca BARI", "tipo": "vinoteca", "base_url": "https://www.bari.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "TiendaVinos", "tipo": "vinoteca", "base_url": "https://www.tiendavinos.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Casa de Vinos Mendoza", "tipo": "vinoteca", "base_url": "https://casadevinosmendoza.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Vinos x Caja", "tipo": "vinoteca", "base_url": "https://www.vinosxcaja.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "shopify"]},
     {"nombre": "MercadoDeVinos", "tipo": "vinoteca", "base_url": "https://www.mercadodevinos.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "La Viteca", "tipo": "vinoteca", "base_url": "https://laviteca.com", "plataformas": ["tiendanube", "shopify"]},
+    {"nombre": "La Viteca", "tipo": "vinoteca", "base_url": "https://laviteca.com", "envio_nacional": True, "plataformas": ["tiendanube", "shopify"]},
     {"nombre": "Bonvivir", "tipo": "vinoteca", "base_url": "https://bonvivir.com", "plataformas": ["shopify", "tiendanube"]},
     # --- Bodegas: venta directa (10) --------------------------------------
-    {"nombre": "Bodegas Bianchi", "tipo": "bodega", "base_url": "https://www.bodegasbianchi.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Cava Colomé", "tipo": "bodega", "base_url": "https://cavacolome.com", "plataformas": ["woocommerce", "shopify"]},
+    {"nombre": "Bodegas Bianchi", "tipo": "bodega", "base_url": "https://www.bodegasbianchi.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Cava Colomé", "tipo": "bodega", "base_url": "https://cavacolome.com", "envio_nacional": True, "plataformas": ["woocommerce", "shopify"]},
     {"nombre": "Luigi Bosca", "tipo": "bodega", "base_url": "https://shop.luigibosca.com", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Bodega Norton", "tipo": "bodega", "base_url": "https://shop.norton.com.ar", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Rutini Wines", "tipo": "bodega", "base_url": "https://tienda.rutiniwines.com", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Susana Balbo", "tipo": "bodega", "base_url": "https://tienda.susanabalbowines.com.ar", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Escorihuela Gascón", "tipo": "bodega", "base_url": "https://tienda.escorihuela.com", "plataformas": ["vtex", "shopify"]},
-    {"nombre": "Familia Schroeder", "tipo": "bodega", "base_url": "https://tienda.familiaschroeder.com", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Achaval Ferrer", "tipo": "bodega", "base_url": "https://tienda.achaval-ferrer.com", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Krontiras Wines", "tipo": "bodega", "base_url": "https://www.krontiraswines.com/tienda-organica", "plataformas": ["woocommerce", "tiendanube"]},
+    {"nombre": "Bodega Norton", "tipo": "bodega", "base_url": "https://shop.norton.com.ar", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Rutini Wines", "tipo": "bodega", "base_url": "https://tienda.rutiniwines.com", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Susana Balbo", "tipo": "bodega", "base_url": "https://tienda.susanabalbowines.com.ar", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Escorihuela Gascón", "tipo": "bodega", "base_url": "https://tienda.escorihuela.com", "envio_nacional": True, "plataformas": ["vtex", "shopify"]},
+    {"nombre": "Familia Schroeder", "tipo": "bodega", "base_url": "https://tienda.familiaschroeder.com", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Achaval Ferrer", "tipo": "bodega", "base_url": "https://tienda.achaval-ferrer.com", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Krontiras Wines", "tipo": "bodega", "base_url": "https://www.krontiraswines.com/tienda-organica", "envio_nacional": True, "plataformas": ["woocommerce", "tiendanube"]},
     # --- Importadoras / especialistas en vinos importados (10) -----------
-    {"nombre": "Enotek", "tipo": "importador", "base_url": "https://enotek.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Enotek", "tipo": "importador", "base_url": "https://enotek.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
     {"nombre": "Lar de Vinos", "tipo": "importador", "base_url": "https://www.lardevinos.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
     {"nombre": "Armesto Almacén", "tipo": "importador", "base_url": "https://www.armestoalmacen.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
     {"nombre": "Casa Dionisio Vinoteca", "tipo": "importador", "base_url": "https://www.tienda.dionisioonline.com.ar", "plataformas": ["vtex", "tiendanube"]},
     {"nombre": "Rebellion House of Wines", "tipo": "importador", "base_url": "https://www.rebellion.com.ar", "plataformas": ["tiendanube", "shopify"]},
-    {"nombre": "Lo de Granado", "tipo": "importador", "base_url": "https://www.lodegranado.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Lo de Granado", "tipo": "importador", "base_url": "https://www.lodegranado.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
     {"nombre": "Vinoteca Ligier", "tipo": "importador", "base_url": "https://vinotecaligier.com", "plataformas": ["tiendanube", "woocommerce"]},
     {"nombre": "Vinos Inc", "tipo": "importador", "base_url": "https://vinosinc.com.ar", "plataformas": ["woocommerce", "tiendanube"]},
-    {"nombre": "Aldos Vinoteca", "tipo": "importador", "base_url": "https://tienda.aldosvinoteca.com", "plataformas": ["shopify", "tiendanube"]},
-    {"nombre": "Grand Cru", "tipo": "importador", "base_url": "https://www.grandcru.com.ar", "plataformas": ["vtex", "tiendanube"]},
+    {"nombre": "Aldos Vinoteca", "tipo": "importador", "base_url": "https://tienda.aldosvinoteca.com", "envio_nacional": True, "plataformas": ["shopify", "tiendanube"]},
+    {"nombre": "Grand Cru", "tipo": "importador", "base_url": "https://www.grandcru.com.ar", "envio_nacional": True, "plataformas": ["vtex", "tiendanube"]},
 ]
 
 # Ampliación de cobertura a bodegas boutique/chicas y vinotecas regionales
@@ -96,25 +96,25 @@ FUENTES_INFO_REGIONALES = [
     # --- Mendoza (bodegas boutique + 1 vinoteca de autor) -----------------
     {"nombre": "Alpasión", "tipo": "bodega", "region": "Mendoza", "base_url": "https://shop.alpasion.com", "plataformas": ["woocommerce", "tiendanube"]},
     {"nombre": "Familia Cassone", "tipo": "bodega", "region": "Mendoza", "base_url": "https://familiacassone.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Altos Las Hormigas", "tipo": "bodega", "region": "Mendoza", "base_url": "https://www.tiendaaltoslashormigas.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Clos de Chacras", "tipo": "bodega", "region": "Mendoza", "base_url": "https://closdechacras.mitiendanube.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Altos Las Hormigas", "tipo": "bodega", "region": "Mendoza", "base_url": "https://www.tiendaaltoslashormigas.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Clos de Chacras", "tipo": "bodega", "region": "Mendoza", "base_url": "https://closdechacras.mitiendanube.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
     {"nombre": "Bodega Piedra Negra", "tipo": "bodega", "region": "Mendoza", "base_url": "https://tienda.bodegapiedranegra.com", "plataformas": ["shopify"]},
-    {"nombre": "Durigutti Family Winemakers", "tipo": "bodega", "region": "Mendoza", "base_url": "https://tienda.durigutti.com", "plataformas": ["woocommerce"]},
-    {"nombre": "DonVino", "tipo": "vinoteca", "region": "Mendoza", "base_url": "https://donvino.com.ar", "plataformas": ["woocommerce"]},
+    {"nombre": "Durigutti Family Winemakers", "tipo": "bodega", "region": "Mendoza", "base_url": "https://tienda.durigutti.com", "envio_nacional": True, "plataformas": ["woocommerce"]},
+    {"nombre": "DonVino", "tipo": "vinoteca", "region": "Mendoza", "base_url": "https://donvino.com.ar", "envio_nacional": True, "plataformas": ["woocommerce"]},
     # --- San Juan (bodegas boutique) --------------------------------------
-    {"nombre": "Bodega Merced del Estero", "tipo": "bodega", "region": "San Juan", "base_url": "https://merceddelestero.com.ar", "plataformas": ["tiendanube", "woocommerce"]},
-    {"nombre": "Fabril Alto Verde", "tipo": "bodega", "region": "San Juan", "base_url": "https://www.fabrilaltoverde.com.ar", "plataformas": ["woocommerce"]},
+    {"nombre": "Bodega Merced del Estero", "tipo": "bodega", "region": "San Juan", "base_url": "https://merceddelestero.com.ar", "envio_nacional": True, "plataformas": ["tiendanube", "woocommerce"]},
+    {"nombre": "Fabril Alto Verde", "tipo": "bodega", "region": "San Juan", "base_url": "https://www.fabrilaltoverde.com.ar", "envio_nacional": True, "plataformas": ["woocommerce"]},
     {"nombre": "Xumek", "tipo": "bodega", "region": "San Juan", "base_url": "https://xumek.com.ar", "plataformas": ["woocommerce"]},
     {"nombre": "Bodega Putruele", "tipo": "bodega", "region": "San Juan", "base_url": "https://bodegaputruele.com", "plataformas": ["woocommerce"]},
     # --- Salta (bodegas boutique de altura, Cafayate) ----------------------
-    {"nombre": "Bodega El Tránsito", "tipo": "bodega", "region": "Salta", "base_url": "https://shop.bodegaeltransito.com", "plataformas": ["tiendanube"]},
-    {"nombre": "Casa Tukma", "tipo": "bodega", "region": "Salta", "base_url": "https://casatukma.com", "plataformas": ["shopify"]},
+    {"nombre": "Bodega El Tránsito", "tipo": "bodega", "region": "Salta", "base_url": "https://shop.bodegaeltransito.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
+    {"nombre": "Casa Tukma", "tipo": "bodega", "region": "Salta", "base_url": "https://casatukma.com", "envio_nacional": True, "plataformas": ["shopify"]},
     # --- Catamarca (bodega boutique, Tinogasta) ----------------------------
     {"nombre": "Bodega Veralma", "tipo": "bodega", "region": "Catamarca", "base_url": "https://www.tiendaveralma.com.ar", "plataformas": ["tiendanube"]},
     # --- Neuquén (bodega boutique, San Patricio del Chañar) ----------------
-    {"nombre": "Bodega Malma", "tipo": "bodega", "region": "Neuquén", "base_url": "https://shop.bodegamalma.com.ar", "plataformas": ["shopify"]},
+    {"nombre": "Bodega Malma", "tipo": "bodega", "region": "Neuquén", "base_url": "https://shop.bodegamalma.com.ar", "envio_nacional": True, "plataformas": ["shopify"]},
     # --- Río Negro (bodegas boutique/regionales, Alto Valle) ---------------
-    {"nombre": "Bodega Humberto Canale", "tipo": "bodega", "region": "Río Negro", "base_url": "https://shop.bodegahcanale.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Bodega Humberto Canale", "tipo": "bodega", "region": "Río Negro", "base_url": "https://shop.bodegahcanale.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
     {"nombre": "Bodega y Viñedos Agrestis", "tipo": "bodega", "region": "Río Negro", "base_url": "https://www.bodegaagrestis.com.ar", "plataformas": ["tiendanube"]},
     # --- Córdoba (bodega boutique, Traslasierra) ----------------------------
     {"nombre": "Comarca La Matilde", "tipo": "bodega", "region": "Córdoba", "base_url": "https://www.comarcalamatilde.com.ar", "plataformas": ["woocommerce"]},
@@ -123,11 +123,11 @@ FUENTES_INFO_REGIONALES = [
     # --- Buenos Aires: Costa y Sierra de la Ventana -------------------------
     {"nombre": "Bodegas y Viñedos Balcarce", "tipo": "bodega", "region": "Buenos Aires (Balcarce)", "base_url": "https://bodegasbalcarce.com.ar", "plataformas": ["woocommerce"]},
     {"nombre": "Bodega Puerta del Abra", "tipo": "bodega", "region": "Buenos Aires (Balcarce)", "base_url": "https://tienda.puertadelabra.com.ar", "plataformas": ["tiendanube"]},
-    {"nombre": "Bodega Al Este (Terrasabbia)", "tipo": "bodega", "region": "Buenos Aires (Médanos)", "base_url": "https://terrasabbia.mitiendanube.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Bodega Al Este (Terrasabbia)", "tipo": "bodega", "region": "Buenos Aires (Médanos)", "base_url": "https://terrasabbia.mitiendanube.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
     # --- Buenos Aires provincia (vinotecas/distribuidores fuera de CABA/GBA) -
-    {"nombre": "El Mercado de Bebidas", "tipo": "vinoteca", "region": "Buenos Aires (Mar del Plata)", "base_url": "https://www.elmercadodebebidas.com.ar", "plataformas": ["odoo"]},
+    {"nombre": "El Mercado de Bebidas", "tipo": "vinoteca", "region": "Buenos Aires (Mar del Plata)", "base_url": "https://www.elmercadodebebidas.com.ar", "envio_nacional": True, "plataformas": ["odoo"]},
     {"nombre": "Musa Vinos de Autor", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://musavinos2.mitiendanube.com", "plataformas": ["tiendanube"]},
-    {"nombre": "Aromas del Tonel", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://aromasdeltonel.mitiendanube.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Aromas del Tonel", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://aromasdeltonel.mitiendanube.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
 ]
 
 FUENTES_INFO = FUENTES_INFO + FUENTES_INFO_REGIONALES
@@ -152,6 +152,7 @@ FUENTES_REALES = [
         selector_precio=SELECTOR_PRECIO,
         selector_link=SELECTOR_LINK,
         region=info.get("region", ""),
+        envio_nacional=info.get("envio_nacional"),
     )
     for info in FUENTES_INFO
 ]
@@ -162,6 +163,7 @@ FUENTES_DEMO = [
         info["tipo"],
         factor=_factor_demo(info["nombre"]),
         region=info.get("region", ""),
+        envio_nacional=info.get("envio_nacional"),
     )
     for info in FUENTES_INFO
 ]

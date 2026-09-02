@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -11,6 +12,9 @@ class ResultadoPrecio:
     fuente: str
     tipo_fuente: str  # "vinoteca" | "bodega" | "importador"
     url: str = ""
+    # True/False si la fuente declara (o descarta) envío a todo el país en
+    # su propia web; None si no se pudo confirmar.
+    envio_nacional: Optional[bool] = None
 
 
 @dataclass

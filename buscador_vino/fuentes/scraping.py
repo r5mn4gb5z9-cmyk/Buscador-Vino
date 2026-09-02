@@ -68,10 +68,12 @@ class FuenteScraping(FuenteBase):
         timeout: int = 10,
         max_resultados: int = 12,
         region: str = "",
+        envio_nacional: Optional[bool] = None,
     ):
         self.nombre = nombre
         self.tipo = tipo
         self.region = region
+        self.envio_nacional = envio_nacional
         self.base_url = base_url.rstrip("/")
         self.patrones_busqueda = patrones_busqueda
         self.selector_item = selector_item
@@ -151,6 +153,7 @@ class FuenteScraping(FuenteBase):
                     fuente=self.nombre,
                     tipo_fuente=self.tipo,
                     url=href or url,
+                    envio_nacional=self.envio_nacional,
                 )
             )
 

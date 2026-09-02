@@ -40,9 +40,17 @@ Opciones:
 - `--region "Mendoza"` — busca solo en fuentes de esa región/provincia
   (coincide por substring, sin distinguir mayúsculas). Ver regiones
   cubiertas más abajo.
+- `--envio-nacional` — muestra solo fuentes que **declaran en su propia
+  web** que envían a todo el país (ver metodología más abajo). La tabla
+  siempre tiene una columna "Envío" con `Nacional` / `Limitado` / `?`
+  (desconocido, cuando no se encontró una declaración clara).
 - `--directorio` — en vez de buscar un precio, lista bodegas/vinotecas
   boutique que **no** tienen tienda online (combinar con `--region` para
   filtrar). No hace falta pasar un nombre de vino con esta opción.
+- `--favoritos` — busca el precio más barato de cada favorito guardado
+  (ver la sección de favoritos más abajo). No hace falta pasar un vino.
+- `--favoritos-agregar "nombre"` / `--favoritos-quitar "nombre"` /
+  `--favoritos-listar` — administran la lista de favoritos.
 - `--csv resultados.csv` — exporta la tabla a CSV.
 - `--timeout N` — timeout total en segundos para esperar a todas las fuentes
   en paralelo (default 30).
@@ -56,6 +64,49 @@ términos de servicio prohíben el scraping automatizado y no tienen API
 pública gratuita, así que en vez de eso comparamos variedad + precio
 dentro de las fuentes que ya tenemos (ver `buscador_vino/variedades.py` y
 `elegir_similares` en `buscador_vino/comparador.py`).
+
+## Envío a todo el país
+
+Cada fuente real tiene un campo `envio_nacional` (`True` / `False` /
+desconocido) que indica si **su propia web declara** que envía a todo el
+país — no es un dato verificado contra un courier, es lo que el sitio dice
+de sí mismo. Se investigó pegándole a la home y a rutas típicas de
+política de envío (`/envios`, `/faq`, `/preguntas-frecuentes`, etc.) de
+las 55 fuentes reales y buscando frases como "envío a todo el país" o
+"cobertura nacional". De esa forma se confirmó **32 de 55** fuentes; las
+23 restantes quedan como desconocidas (no se encontró una declaración
+clara en las páginas revisadas, lo cual no significa que no envíen a todo
+el país, solo que no se pudo confirmar ahí). No se encontró ninguna
+declarando explícitamente que *no* envía a todo el país.
+
+Usalo con `--envio-nacional` (CLI) o el checkbox correspondiente (web).
+Si una fuente cambia su política de envío, hay que volver a chequearla a
+mano y actualizar `"envio_nacional"` en `buscador_vino/fuentes/config.py`
+— no se vuelve a verificar en cada búsqueda porque implicaría pedidos HTTP
+extra en cada corrida.
+
+## Mis favoritos
+
+Guardá el nombre de un vino o de una bodega que te gusta y, cada vez que
+corrés el programa con `--favoritos`, te trae automáticamente el precio
+más barato disponible de cada uno en todo el mercado (todas las fuentes,
+o las que filtres con `--region`/`--tipo`/`--envio-nacional`).
+
+```bash
+python main.py --favoritos-agregar "Rutini Malbec"
+python main.py --favoritos-agregar "Bodega Chacra"
+python main.py --favoritos
+```
+
+En la web está en `/favoritos` (con link desde la página principal): un
+formulario para agregar/quitar y, automáticamente al abrir la página, el
+precio más barato de cada uno.
+
+Los favoritos se guardan en `favoritos.json` en la raíz del proyecto (no
+se commitea, está en `.gitignore` — es dato personal, no código). Los
+favoritos se buscan **uno por uno**, no todos en simultáneo: cada
+búsqueda ya dispara pedidos en paralelo a todas las fuentes, así que
+buscarlos todos a la vez multiplicaría esa carga sobre los mismos sitios.
 
 Probá primero con `--demo`:
 
@@ -213,10 +264,11 @@ buscador_vino/
   texto.py             # normalización de texto compartida (sin tildes/mayúsculas)
   parsing.py           # normaliza texto de precio ("$ 15.990,50") a float
   variedades.py         # detecta la variedad de uva de la búsqueda (Malbec, Cabernet Sauvignon, ...)
-  comparador.py         # ejecuta todas las fuentes en paralelo, ordena por precio y arma "también te puede gustar"
-  tabla.py             # arma el resumen "más barato" + la tabla completa + el directorio
+  favoritos.py           # persistencia de "mis favoritos" en favoritos.json
+  comparador.py         # ejecuta todas las fuentes en paralelo, ordena por precio, "también te puede gustar" y favoritos
+  tabla.py             # arma el resumen "más barato" + la tabla completa + directorio + favoritos
   fuentes/
-    base.py            # interfaz FuenteBase (incluye region)
+    base.py            # interfaz FuenteBase (incluye region y envio_nacional)
     plataformas.py       # patrones de URL y selectores CSS comunes por plataforma
     scraping.py         # FuenteScraping: prueba patrones de URL hasta encontrar resultados
     mock.py            # FuenteSimulada: fuente de demo sin red

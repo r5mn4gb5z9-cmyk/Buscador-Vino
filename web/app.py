@@ -17,9 +17,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 
-from buscador_vino.comparador import comparar_precios, elegir_similares
+from buscador_vino.comparador import buscar_favoritos, comparar_precios, elegir_similares
+from buscador_vino.favoritos import agregar_favorito, cargar_favoritos, quitar_favorito
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
 from buscador_vino.fuentes.directorio import BODEGAS_SIN_TIENDA
 from buscador_vino.variedades import detectar_variedad
@@ -27,6 +28,17 @@ from buscador_vino.variedades import detectar_variedad
 app = Flask(__name__)
 
 REGIONES = sorted({f.region for f in FUENTES_REALES if f.region})
+
+
+def _filtrar_fuentes(modo_demo, tipo, region, solo_envio_nacional):
+    fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
+    if tipo:
+        fuentes = [f for f in fuentes if f.tipo == tipo]
+    if region:
+        fuentes = [f for f in fuentes if f.region == region]
+    if solo_envio_nacional:
+        fuentes = [f for f in fuentes if f.envio_nacional is True]
+    return fuentes
 
 
 @app.route("/", methods=["GET"])
@@ -39,6 +51,7 @@ def index():
     region = request.args.get("region", "").strip()
     if region not in REGIONES:
         region = ""
+    solo_envio_nacional = request.args.get("envio_nacional") == "1"
     resultados = []
     similares = []
     variedad = None
@@ -46,11 +59,7 @@ def index():
 
     if vino:
         buscado = True
-        fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
-        if tipo:
-            fuentes = [f for f in fuentes if f.tipo == tipo]
-        if region:
-            fuentes = [f for f in fuentes if f.region == region]
+        fuentes = _filtrar_fuentes(modo_demo, tipo, region, solo_envio_nacional)
 
         variedad = detectar_variedad(vino)
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -70,6 +79,7 @@ def index():
         tipo=tipo,
         region=region,
         regiones=REGIONES,
+        envio_nacional=solo_envio_nacional,
         resultados=resultados,
         similares=similares,
         variedad=variedad,
@@ -90,6 +100,40 @@ def directorio():
         region=region,
         regiones=sorted({b.region for b in BODEGAS_SIN_TIENDA}),
     )
+
+
+@app.route("/favoritos", methods=["GET"])
+def favoritos():
+    modo_demo = request.args.get("demo") == "1"
+    favoritos_guardados = cargar_favoritos()
+    resultados_por_favorito = []
+
+    if favoritos_guardados:
+        fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
+        resultados_por_favorito = buscar_favoritos(favoritos_guardados, fuentes, timeout_total=30)
+
+    return render_template(
+        "favoritos.html",
+        favoritos=favoritos_guardados,
+        resultados_por_favorito=resultados_por_favorito,
+        modo_demo=modo_demo,
+    )
+
+
+@app.route("/favoritos/agregar", methods=["POST"])
+def favoritos_agregar():
+    nombre = request.form.get("nombre", "").strip()
+    if nombre:
+        agregar_favorito(nombre)
+    return redirect(url_for("favoritos"))
+
+
+@app.route("/favoritos/quitar", methods=["POST"])
+def favoritos_quitar():
+    nombre = request.form.get("nombre", "").strip()
+    if nombre:
+        quitar_favorito(nombre)
+    return redirect(url_for("favoritos"))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-from buscador_vino.comparador import comparar_precios, elegir_similares
+from buscador_vino.comparador import buscar_favoritos, comparar_precios, elegir_similares
 from buscador_vino.fuentes.mock import FuenteSimulada
 from buscador_vino.models import ResultadoPrecio
-from buscador_vino.tabla import imprimir_tabla
+from buscador_vino.tabla import imprimir_favoritos, imprimir_tabla
 from buscador_vino.variedades import detectar_variedad
 
 
@@ -77,3 +77,42 @@ def test_elegir_similares_excluye_los_ya_encontrados_y_ordena_por_precio():
 def test_elegir_similares_sin_pool_devuelve_vacio():
     originales = [_resultado("Rutini Malbec", 10_000)]
     assert elegir_similares(originales, []) == []
+
+
+def test_fuente_simulada_propaga_envio_nacional_al_resultado():
+    f = FuenteSimulada("Bodega Test", "bodega", envio_nacional=True)
+    resultados = f.buscar("Malbec")
+    assert resultados[0].envio_nacional is True
+
+
+def test_imprimir_tabla_muestra_columna_envio():
+    resultados = comparar_precios("Malbec", [FuenteSimulada("Vinoteca A", "vinoteca")])
+    tabla = imprimir_tabla(resultados)
+    assert "Envío" in tabla
+    assert "?" in tabla  # FuenteSimulada sin envio_nacional -> desconocido
+
+
+def test_buscar_favoritos_devuelve_una_entrada_por_nombre_en_orden():
+    fuentes = [FuenteSimulada("Vinoteca A", "vinoteca", factor=1.0)]
+    resultados = buscar_favoritos(["Rutini Malbec", "Bonarda Reserva"], fuentes)
+
+    assert [nombre for nombre, _ in resultados] == ["Rutini Malbec", "Bonarda Reserva"]
+    assert all(res for _, res in resultados)
+
+
+def test_imprimir_favoritos_sin_ninguno_guardado():
+    assert "favoritos" in imprimir_favoritos([]).lower()
+
+
+def test_imprimir_favoritos_marca_los_que_no_tienen_resultados():
+    tabla = imprimir_favoritos([("Vino Fantasma", [])])
+    assert "Vino Fantasma" in tabla
+    assert "sin resultados" in tabla
+
+
+def test_imprimir_favoritos_muestra_el_mas_barato():
+    # ya viene ordenado de menor a mayor, como lo entrega comparar_precios
+    resultados = [_resultado("Rutini Malbec", 15_000), _resultado("Rutini Malbec", 20_000)]
+    tabla = imprimir_favoritos([("Rutini Malbec", resultados)])
+    assert "15.000" in tabla
+    assert "20.000" not in tabla  # solo se muestra el más barato, no todos

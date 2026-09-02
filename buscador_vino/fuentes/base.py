@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from ..models import ResultadoPrecio
 
@@ -11,6 +11,9 @@ class FuenteBase(ABC):
     nombre: str = "Fuente"
     tipo: str = "otro"  # "vinoteca" | "bodega" | "importador"
     region: str = ""  # provincia/zona, ej. "Mendoza", "Salta" — "" si no se investigó
+    # True/False si la propia web declara (o descarta) envío a todo el
+    # país; None si no se encontró una declaración clara al investigar.
+    envio_nacional: Optional[bool] = None
 
     @abstractmethod
     def buscar(self, consulta: str) -> List[ResultadoPrecio]:

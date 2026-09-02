@@ -68,6 +68,18 @@
       font-size: .85rem;
       color: var(--muted);
     }
+    .envio-badge {
+      display: inline-block;
+      font-size: .7rem;
+      padding: .12rem .4rem;
+      border-radius: 999px;
+      background: #e6f4ea;
+      color: #1e6b34;
+      white-space: nowrap;
+    }
+    @media (prefers-color-scheme: dark) {
+      .envio-badge { background: #16321f; color: #7fd99a; }
+    }
     button {
       font-size: 1rem;
       padding: .7rem;
@@ -193,6 +205,10 @@
       {% endfor %}
     </select>
     <label class="demo">
+      <input type="checkbox" name="envio_nacional" value="1" {% if envio_nacional %}checked{% endif %}>
+      Solo fuentes con envío a todo el país (declarado en su web)
+    </label>
+    <label class="demo">
       <input type="checkbox" name="demo" value="1" {% if modo_demo %}checked{% endif %}>
       Modo demo (precios simulados, sin depender de internet)
     </label>
@@ -207,6 +223,7 @@
         <p class="fuente-nombre">{{ mejor.fuente }} ({{ mejor.tipo_fuente }})</p>
         <p class="vino-nombre">{{ mejor.vino }}</p>
         <p class="precio-grande">{{ "{:,.2f}".format(mejor.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ mejor.moneda }}</p>
+        {% if mejor.envio_nacional %}<p style="margin: 0 0 .8rem;"><span class="envio-badge">🚚 envío a todo el país</span></p>{% endif %}
         {% if mejor.url %}
         <a class="comprar" href="{{ mejor.url }}" target="_blank" rel="noopener">Ir a comprar →</a>
         {% endif %}
@@ -217,7 +234,7 @@
         <h2>Otras opciones ({{ resultados|length - 1 }})</h2>
         <table>
           <thead>
-            <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th><th>Link</th></tr>
+            <tr><th>Vino</th><th>Precio</th><th>Fuente</th><th>Tipo</th><th>Envío</th><th>Link</th></tr>
           </thead>
           <tbody>
             {% for r in resultados[1:] %}
@@ -226,6 +243,7 @@
               <td>{{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</td>
               <td>{{ r.fuente }}</td>
               <td><span class="tipo">{{ r.tipo_fuente }}</span></td>
+              <td>{% if r.envio_nacional %}<span class="envio-badge">🚚 nacional</span>{% else %}-{% endif %}</td>
               <td>{% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">Ver →</a>{% else %}-{% endif %}</td>
             </tr>
             {% endfor %}
@@ -246,7 +264,7 @@
         <div class="similar-card">
           <div>
             <p class="nombre">{{ r.vino }}</p>
-            <p class="detalle">{{ r.fuente }} · <span class="tipo">{{ r.tipo_fuente }}</span> · {{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</p>
+            <p class="detalle">{{ r.fuente }} · <span class="tipo">{{ r.tipo_fuente }}</span> · {{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}{% if r.envio_nacional %} · <span class="envio-badge">🚚 nacional</span>{% endif %}</p>
           </div>
           {% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">Ver →</a>{% endif %}
         </div>
@@ -269,6 +287,9 @@
   {% endif %}
 
   <p class="sub" style="margin-top: 2rem;">
+    <a href="/favoritos">⭐ Ver mis favoritos →</a>
+  </p>
+  <p class="sub">
     ¿Buscás una bodega boutique chica que todavía no tiene tienda online?
     <a href="/directorio">Ver directorio de bodegas para contactar directo →</a>
   </p>
