@@ -10,10 +10,12 @@ import argparse
 import csv
 import logging
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
-from buscador_vino.comparador import comparar_precios
+from buscador_vino.comparador import comparar_precios, elegir_similares
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
 from buscador_vino.tabla import imprimir_mejor_precio, imprimir_tabla
+from buscador_vino.variedades import detectar_variedad
 
 
 def main() -> int:
@@ -55,12 +57,25 @@ def main() -> int:
             file=sys.stderr,
         )
 
-    resultados = comparar_precios(args.vino, fuentes, timeout_total=args.timeout)
+    variedad = detectar_variedad(args.vino)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futuro_principal = pool.submit(comparar_precios, args.vino, fuentes, args.timeout)
+        futuro_variedad = (
+            pool.submit(comparar_precios, variedad, fuentes, args.timeout) if variedad else None
+        )
+        resultados = futuro_principal.result()
+        pool_variedad = futuro_variedad.result() if futuro_variedad else []
+
+    similares = elegir_similares(resultados, pool_variedad) if resultados else []
 
     print(imprimir_mejor_precio(resultados))
     if resultados:
         print("\nTodas las opciones:")
         print(imprimir_tabla(resultados))
+
+    if similares:
+        print(f"\nTambién te puede gustar ({variedad}, precio parecido):")
+        print(imprimir_tabla(similares))
 
     if args.csv:
         with open(args.csv, "w", newline="", encoding="utf-8") as f:

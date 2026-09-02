@@ -1,5 +1,4 @@
 import logging
-import unicodedata
 from typing import List, Optional
 from urllib.parse import quote_plus
 
@@ -8,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from ..models import ResultadoPrecio
 from ..parsing import normalizar_precio
+from ..texto import normalizar as _normalizar_texto
 from .base import FuenteBase
 
 logger = logging.getLogger(__name__)
@@ -24,11 +24,6 @@ _PRECIO_MIN = 500
 _PRECIO_MAX = 2_000_000
 
 _STOPWORDS = {"de", "del", "la", "el", "los", "las", "y", "vino", "vinos", "bodega"}
-
-
-def _normalizar_texto(s: str) -> str:
-    s = unicodedata.normalize("NFKD", s.lower())
-    return "".join(c for c in s if not unicodedata.combining(c))
 
 
 def _tokens_relevantes(consulta: str) -> List[str]:

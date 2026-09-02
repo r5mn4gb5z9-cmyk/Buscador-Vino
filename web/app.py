@@ -13,13 +13,15 @@ celu. Si lo corrés directo en el celu con Termux, abrí esa misma URL
 """
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, render_template, request
 
-from buscador_vino.comparador import comparar_precios
+from buscador_vino.comparador import comparar_precios, elegir_similares
 from buscador_vino.fuentes.config import FUENTES_DEMO, FUENTES_REALES
+from buscador_vino.variedades import detectar_variedad
 
 app = Flask(__name__)
 
@@ -32,6 +34,8 @@ def index():
     if tipo not in ("vinoteca", "bodega", "importador"):
         tipo = ""
     resultados = []
+    similares = []
+    variedad = None
     buscado = False
 
     if vino:
@@ -39,7 +43,17 @@ def index():
         fuentes = FUENTES_DEMO if modo_demo else FUENTES_REALES
         if tipo:
             fuentes = [f for f in fuentes if f.tipo == tipo]
-        resultados = comparar_precios(vino, fuentes, timeout_total=30)
+
+        variedad = detectar_variedad(vino)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futuro_principal = pool.submit(comparar_precios, vino, fuentes, 30)
+            futuro_variedad = (
+                pool.submit(comparar_precios, variedad, fuentes, 30) if variedad else None
+            )
+            resultados = futuro_principal.result()
+            pool_variedad = futuro_variedad.result() if futuro_variedad else []
+
+        similares = elegir_similares(resultados, pool_variedad) if resultados else []
 
     return render_template(
         "index.html",
@@ -47,6 +61,8 @@ def index():
         modo_demo=modo_demo,
         tipo=tipo,
         resultados=resultados,
+        similares=similares,
+        variedad=variedad,
         buscado=buscado,
     )
 

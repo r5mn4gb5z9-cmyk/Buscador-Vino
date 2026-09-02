@@ -139,12 +139,38 @@
       font-size: .9rem;
     }
     .otras { margin-top: 1.5rem; }
-    .otras h2 {
+    .otras h2, .similares h2 {
       font-size: .8rem;
       text-transform: uppercase;
       letter-spacing: .03em;
       color: var(--muted);
       margin: 0 0 .5rem;
+    }
+    .similares { margin-top: 1.5rem; }
+    .similares p.nota {
+      font-size: .78rem;
+      color: var(--muted);
+      margin: 0 0 .7rem;
+    }
+    .similar-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .8rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem .9rem;
+      margin-bottom: .5rem;
+    }
+    .similar-card .nombre { font-weight: 600; margin: 0 0 .2rem; }
+    .similar-card .detalle { font-size: .82rem; color: var(--muted); margin: 0; }
+    .similar-card a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .85rem;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -199,6 +225,26 @@
             {% endfor %}
           </tbody>
         </table>
+      </div>
+      {% endif %}
+
+      {% if similares %}
+      <div class="similares">
+        <h2>También te puede gustar</h2>
+        <p class="nota">
+          Mismo varietal ({{ variedad }}) y precio parecido, buscado en nuestras
+          propias fuentes. No usamos rating ni descripción de Vivino porque
+          scrapearlo de forma automatizada viola sus términos de servicio.
+        </p>
+        {% for r in similares %}
+        <div class="similar-card">
+          <div>
+            <p class="nombre">{{ r.vino }}</p>
+            <p class="detalle">{{ r.fuente }} · <span class="tipo">{{ r.tipo_fuente }}</span> · {{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</p>
+          </div>
+          {% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener">Ver →</a>{% endif %}
+        </div>
+        {% endfor %}
       </div>
       {% endif %}
     {% else %}
