@@ -1,4 +1,11 @@
-from buscador_vino.comparador import buscar_favoritos, comparar_precios, elegir_similares
+import time
+
+from buscador_vino.comparador import (
+    agrupar_mas_barato_por_vino,
+    buscar_favoritos,
+    comparar_precios,
+    elegir_similares,
+)
 from buscador_vino.fuentes.mock import FuenteSimulada
 from buscador_vino.models import ResultadoPrecio
 from buscador_vino.tabla import imprimir_favoritos, imprimir_tabla
@@ -16,6 +23,29 @@ def test_comparar_precios_ordena_y_agrega_todas_las_fuentes():
     assert len(resultados) == 3
     assert [r.fuente for r in resultados] == ["Vinoteca B", "Vinoteca A", "Bodega X"]
     assert resultados[0].precio <= resultados[1].precio <= resultados[2].precio
+
+
+def test_comparar_precios_no_espera_a_una_fuente_colgada():
+    # Bug real: `with ThreadPoolExecutor(...) as pool` bloqueaba al salir
+    # hasta que TODOS los hilos terminaran, aunque as_completed() ya
+    # hubiera dejado de esperar por timeout_total. Una sola fuente con una
+    # conexión colgada (más lenta que su propio timeout HTTP, ej. datos
+    # llegando de a poquito sin cortarse nunca) hacía que timeout_total no
+    # sirviera de nada y la búsqueda entera se congelara.
+    class FuenteColgada(FuenteSimulada):
+        def buscar(self, consulta):
+            time.sleep(3)
+            return super().buscar(consulta)
+
+    fuentes = [FuenteSimulada("OK", "vinoteca"), FuenteColgada("Colgada", "vinoteca")]
+
+    inicio = time.time()
+    resultados = comparar_precios("Malbec", fuentes, timeout_total=0.5)
+    transcurrido = time.time() - inicio
+
+    assert transcurrido < 2, "comparar_precios no debería esperar a una fuente más lenta que el timeout"
+    assert len(resultados) == 1
+    assert resultados[0].fuente == "OK"
 
 
 def test_fuente_que_explota_no_rompe_la_comparacion():
@@ -100,6 +130,67 @@ def test_buscar_favoritos_devuelve_una_entrada_por_nombre_en_orden():
     assert all(res for _, res in resultados)
 
 
+class _FuenteMultiVino(FuenteSimulada):
+    """Simula una fuente que, para una bodega, devuelve varios vinos
+    distintos (como pasaría de verdad al buscar el nombre de una bodega
+    como texto libre)."""
+
+    def buscar(self, consulta):
+        return [
+            ResultadoPrecio(
+                vino="Chacra Pinot Noir",
+                precio=30_000,
+                moneda="ARS",
+                fuente=self.nombre,
+                tipo_fuente=self.tipo,
+            ),
+            ResultadoPrecio(
+                vino="Chacra Sauvignon Blanc",
+                precio=18_000,
+                moneda="ARS",
+                fuente=self.nombre,
+                tipo_fuente=self.tipo,
+            ),
+        ]
+
+
+def test_buscar_favoritos_de_una_bodega_agrupa_todos_sus_vinos():
+    fuentes = [_FuenteMultiVino("Vinoteca A", "vinoteca")]
+    resultados = buscar_favoritos(["Bodega Chacra"], fuentes)
+
+    nombre, vinos = resultados[0]
+    assert nombre == "Bodega Chacra"
+    assert {v.vino for v in vinos} == {"Chacra Pinot Noir", "Chacra Sauvignon Blanc"}
+
+
+def test_agrupar_mas_barato_por_vino_se_queda_con_el_mas_barato_de_cada_grupo():
+    resultados = [
+        _resultado("Chacra Pinot Noir", 30_000, fuente="Vinoteca A"),
+        _resultado("Chacra Pinot Noir", 25_000, fuente="Vinoteca B"),  # mismo vino, más barato
+        _resultado("Chacra Sauvignon Blanc", 18_000, fuente="Vinoteca A"),
+    ]
+
+    agrupados = agrupar_mas_barato_por_vino(resultados)
+
+    assert len(agrupados) == 2
+    pinot = next(r for r in agrupados if r.vino == "Chacra Pinot Noir")
+    assert pinot.precio == 25_000
+    assert pinot.fuente == "Vinoteca B"
+
+
+def test_agrupar_mas_barato_por_vino_ordena_los_grupos_por_precio():
+    resultados = [_resultado("Vino Caro", 50_000), _resultado("Vino Barato", 10_000)]
+    agrupados = agrupar_mas_barato_por_vino(resultados)
+    assert [r.vino for r in agrupados] == ["Vino Barato", "Vino Caro"]
+
+
+def test_agrupar_mas_barato_por_vino_ignora_tildes_y_mayusculas():
+    resultados = [_resultado("Torrontés", 12_000), _resultado("torrontes", 9_000)]
+    agrupados = agrupar_mas_barato_por_vino(resultados)
+    assert len(agrupados) == 1
+    assert agrupados[0].precio == 9_000
+
+
 def test_imprimir_favoritos_sin_ninguno_guardado():
     assert "favoritos" in imprimir_favoritos([]).lower()
 
@@ -110,9 +201,13 @@ def test_imprimir_favoritos_marca_los_que_no_tienen_resultados():
     assert "sin resultados" in tabla
 
 
-def test_imprimir_favoritos_muestra_el_mas_barato():
-    # ya viene ordenado de menor a mayor, como lo entrega comparar_precios
-    resultados = [_resultado("Rutini Malbec", 15_000), _resultado("Rutini Malbec", 20_000)]
-    tabla = imprimir_favoritos([("Rutini Malbec", resultados)])
-    assert "15.000" in tabla
-    assert "20.000" not in tabla  # solo se muestra el más barato, no todos
+def test_imprimir_favoritos_muestra_todos_los_vinos_recibidos():
+    # imprimir_favoritos no agrupa por su cuenta: espera recibir la lista
+    # ya agrupada (agrupar_mas_barato_por_vino la arma antes de llegar
+    # acá), así que si le pasan varios vinos distintos los muestra todos.
+    resultados = [_resultado("Chacra Pinot Noir", 30_000), _resultado("Chacra Sauvignon Blanc", 18_000)]
+    tabla = imprimir_favoritos([("Bodega Chacra", resultados)])
+    assert "30.000" in tabla
+    assert "18.000" in tabla
+    assert "Chacra Pinot Noir" in tabla
+    assert "Chacra Sauvignon Blanc" in tabla

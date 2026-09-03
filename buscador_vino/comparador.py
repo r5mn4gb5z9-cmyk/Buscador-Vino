@@ -20,7 +20,16 @@ def comparar_precios(
     se caiga por un solo sitio caído o con el HTML cambiado.
     """
     resultados: List[ResultadoPrecio] = []
-    with ThreadPoolExecutor(max_workers=max(1, len(fuentes))) as pool:
+    # OJO: no usar "with ThreadPoolExecutor(...) as pool" acá. Al salir del
+    # bloque "with" llama a pool.shutdown(wait=True), que bloquea hasta que
+    # TODOS los hilos terminen — incluidos los que ya dejamos de esperar
+    # más abajo por el timeout. Si un solo sitio queda con una conexión
+    # colgada (más lenta que el timeout por request pero sin cortarse
+    # nunca del todo), esa espera "por las dudas" terminaba haciendo que
+    # `timeout_total` no sirviera de nada y la búsqueda entera se
+    # congelara. Por eso se cierra el pool a mano con wait=False.
+    pool = ThreadPoolExecutor(max_workers=max(1, len(fuentes)))
+    try:
         futuros = {pool.submit(f.buscar, consulta): f for f in fuentes}
         try:
             for futuro in as_completed(futuros, timeout=timeout_total):
@@ -31,6 +40,8 @@ def comparar_precios(
                     logger.warning("%s: fallo al buscar (%s)", fuente.nombre, exc)
         except FuturesTimeoutError:
             logger.warning("Tiempo de espera agotado; se muestran resultados parciales")
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
 
     resultados.sort(key=lambda r: r.precio)
     return resultados
@@ -70,16 +81,47 @@ def elegir_similares(
     return similares
 
 
+def agrupar_mas_barato_por_vino(resultados: List[ResultadoPrecio]) -> List[ResultadoPrecio]:
+    """Agrupa `resultados` por nombre de vino (normalizado, sin tildes ni
+    mayúsculas) y se queda con el más barato de cada uno, devueltos
+    ordenados de menor a mayor precio.
+
+    Un favorito puede ser un vino puntual ("Rutini Malbec") o una bodega
+    ("Bodega Chacra"): buscar el nombre de una bodega como texto libre
+    encuentra todos los vinos de esa bodega que venden las fuentes (cada
+    uno con su propio nombre), no un solo producto. Sin agrupar, nos
+    quedábamos solo con el más barato de TODOS esos vinos mezclados y
+    descartábamos el resto — con esto, cada vino/línea distinto que
+    vende la bodega aparece con su propio más barato, en vez de mostrar
+    uno solo "elegido al azar". Para un vino puntual esto da un único
+    grupo, así que el comportamiento no cambia en ese caso.
+    """
+    mejores: dict = {}
+    for r in resultados:
+        clave = normalizar(r.vino)
+        actual = mejores.get(clave)
+        if actual is None or r.precio < actual.precio:
+            mejores[clave] = r
+
+    agrupados = list(mejores.values())
+    agrupados.sort(key=lambda r: r.precio)
+    return agrupados
+
+
 def buscar_favoritos(
     favoritos: List[str], fuentes: List[FuenteBase], timeout_total: int = 20
 ) -> List[Tuple[str, List[ResultadoPrecio]]]:
     """Busca cada nombre de `favoritos` en `fuentes` y devuelve, para cada
-    uno, todos los resultados encontrados (ya ordenados de menor a mayor
-    precio por `comparar_precios`; el primero es el más barato).
+    uno, un resultado por cada vino/línea distinto encontrado (el más
+    barato de cada uno — ver `agrupar_mas_barato_por_vino`), ordenados de
+    menor a mayor precio.
 
     Los favoritos se buscan uno por uno, no todos en simultáneo: cada
     búsqueda ya dispara un pedido HTTP a cada fuente en paralelo, así que
     lanzar varios favoritos a la vez multiplicaría esa carga sobre los
     mismos sitios (ver "Uso responsable" en el README).
     """
-    return [(nombre, comparar_precios(nombre, fuentes, timeout_total)) for nombre in favoritos]
+    return [
+        (nombre, agrupar_mas_barato_por_vino(comparar_precios(nombre, fuentes, timeout_total)))
+        for nombre in favoritos
+    ]

@@ -70,9 +70,15 @@ def imprimir_tabla(resultados: List[ResultadoPrecio]) -> str:
 
 
 def imprimir_favoritos(resultados_por_favorito: List[Tuple[str, List[ResultadoPrecio]]]) -> str:
-    """Devuelve una tabla de texto con el precio más barato encontrado
-    para cada favorito guardado, o "sin resultados" si no se encontró
-    nada para ese nombre."""
+    """Devuelve una tabla de texto con una fila por cada vino/línea
+    distinto encontrado para cada favorito guardado (el más barato de
+    cada uno — ver `agrupar_mas_barato_por_vino` en comparador.py), o
+    "sin resultados" si no se encontró nada para ese nombre.
+
+    Para un favorito puntual ("Rutini Malbec") esto da una sola fila; para
+    una bodega con varios vinos distintos ("Bodega Chacra") da una fila
+    por cada uno, no solo el más barato en general.
+    """
     if not resultados_por_favorito:
         return "No tenés favoritos guardados todavía."
 
@@ -80,17 +86,17 @@ def imprimir_favoritos(resultados_por_favorito: List[Tuple[str, List[ResultadoPr
     filas = []
     for nombre_favorito, resultados in resultados_por_favorito:
         if resultados:
-            mejor = resultados[0]
-            filas.append(
-                [
-                    nombre_favorito,
-                    mejor.vino,
-                    f"{_formatear_precio_ar(mejor.precio)} {mejor.moneda}",
-                    mejor.fuente,
-                    _formatear_envio(mejor.envio_nacional),
-                    mejor.url or "-",
-                ]
-            )
+            for r in resultados:
+                filas.append(
+                    [
+                        nombre_favorito,
+                        r.vino,
+                        f"{_formatear_precio_ar(r.precio)} {r.moneda}",
+                        r.fuente,
+                        _formatear_envio(r.envio_nacional),
+                        r.url or "-",
+                    ]
+                )
         else:
             filas.append([nombre_favorito, "-", "-", "sin resultados", "-", "-"])
 

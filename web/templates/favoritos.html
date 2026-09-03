@@ -77,18 +77,28 @@
       padding: .8rem .9rem;
       margin-bottom: .6rem;
     }
-    .favorito-card .fila-top {
+    .favorito-card .cabecera {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: baseline;
       gap: .6rem;
+      margin-bottom: .5rem;
     }
-    .favorito-card .nombre { font-weight: 700; margin: 0 0 .3rem; }
-    .favorito-card .encontrado { font-size: .85rem; margin: 0 0 .15rem; }
-    .favorito-card .precio { font-weight: 700; color: var(--accent); }
-    .favorito-card .detalle { font-size: .8rem; color: var(--muted); margin: 0; }
+    .favorito-card .nombre { font-weight: 700; margin: 0; }
+    .favorito-card .cantidad { font-size: .75rem; color: var(--muted); }
+    .vino-linea {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .6rem;
+      padding: .45rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .vino-linea .encontrado { font-size: .85rem; margin: 0 0 .15rem; }
+    .vino-linea .precio { font-weight: 700; color: var(--accent); }
+    .vino-linea .detalle { font-size: .78rem; color: var(--muted); margin: 0; }
     .favorito-card .sin-resultados { font-size: .85rem; color: var(--muted); font-style: italic; }
-    .favorito-card a.ver { color: var(--accent); text-decoration: none; font-weight: 700; font-size: .82rem; }
+    .vino-linea a.ver { color: var(--accent); text-decoration: none; font-weight: 700; font-size: .82rem; white-space: nowrap; }
     form.quitar button {
       background: none;
       border: 1px solid var(--border);
@@ -117,7 +127,8 @@
   <p class="sub">
     Guardá el nombre de un vino o una bodega que te gusta y cada vez que abrís
     esta página te traemos automáticamente el precio más barato disponible
-    en todo el mercado.
+    en todo el mercado. Si es una bodega, te mostramos todos los vinos/líneas
+    distintos que encontramos de ella, no solo uno.
   </p>
 
   <form class="agregar" method="post" action="/favoritos/agregar">
@@ -138,26 +149,31 @@
   {% else %}
     {% for nombre_favorito, resultados in resultados_por_favorito %}
     <div class="favorito-card">
-      <div class="fila-top">
-        <div>
-          <p class="nombre">{{ nombre_favorito }}</p>
-          {% if resultados %}
-            {% set mejor = resultados[0] %}
-            <p class="encontrado">{{ mejor.vino }}</p>
-            <p class="detalle">
-              <span class="precio">{{ "{:,.2f}".format(mejor.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ mejor.moneda }}</span>
-              · {{ mejor.fuente }} · <span class="tipo">{{ mejor.tipo_fuente }}</span>
-              {% if mejor.envio_nacional %} · 🚚 envío a todo el país{% endif %}
-              {% if resultados|length > 1 %} · +{{ resultados|length - 1 }} opción(es) más{% endif %}
-            </p>
-          {% else %}
-            <p class="sin-resultados">Sin resultados por ahora.</p>
-          {% endif %}
-        </div>
-        {% if resultados and resultados[0].url %}
-        <a class="ver" href="{{ resultados[0].url }}" target="_blank" rel="noopener">Ver →</a>
+      <div class="cabecera">
+        <p class="nombre">{{ nombre_favorito }}</p>
+        {% if resultados|length > 1 %}
+        <span class="cantidad">{{ resultados|length }} vinos/líneas distintos</span>
         {% endif %}
       </div>
+
+      {% if resultados %}
+        {% for r in resultados %}
+        <div class="vino-linea">
+          <div>
+            <p class="encontrado">{{ r.vino }}</p>
+            <p class="detalle">
+              <span class="precio">{{ "{:,.2f}".format(r.precio).replace(",", "X").replace(".", ",").replace("X", ".") }} {{ r.moneda }}</span>
+              · {{ r.fuente }} · <span class="tipo">{{ r.tipo_fuente }}</span>
+              {% if r.envio_nacional %} · 🚚 nacional{% endif %}
+            </p>
+          </div>
+          {% if r.url %}<a class="ver" href="{{ r.url }}" target="_blank" rel="noopener">Ver →</a>{% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="sin-resultados">Sin resultados por ahora.</p>
+      {% endif %}
+
       <form class="quitar" method="post" action="/favoritos/quitar" style="margin-top:.6rem;">
         <input type="hidden" name="nombre" value="{{ nombre_favorito }}">
         <button type="submit">Quitar de favoritos</button>
