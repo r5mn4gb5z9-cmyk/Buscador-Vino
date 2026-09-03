@@ -21,6 +21,15 @@ def normalizar_precio(texto: str) -> Optional[float]:
     if not texto:
         return None
 
+    # Algunas plataformas (VTEX en particular) envuelven cada grupo de
+    # dígitos del precio en su propio elemento, así que al extraer el
+    # texto quedan espacios pegados a los separadores (ej. "$ 22 . 570 ,
+    # 27" en vez de "$22.570,27"). Sin este colapso, el patrón de abajo no
+    # reconoce el número completo y termina agarrando un pedazo suelto
+    # (ej. "22" en vez de "22570.27").
+    texto = re.sub(r"(?<=\d)\s+(?=[.,])", "", texto)
+    texto = re.sub(r"(?<=[.,])\s+(?=\d)", "", texto)
+
     match = _PATRON_PRECIO.search(texto)
     if not match:
         return None

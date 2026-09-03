@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 from typing import List, Optional
 from urllib.parse import quote_plus
 
@@ -25,6 +26,23 @@ _PRECIO_MAX = 2_000_000
 
 _STOPWORDS = {"de", "del", "la", "el", "los", "las", "y", "vino", "vinos", "bodega"}
 
+# Frases típicas de "sin stock" en vinotecas/bodegas argentinas (varias
+# plataformas las muestran como texto plano en la misma tarjeta del
+# producto, no en un atributo separado que se pueda leer de forma más
+# directa). Si el texto completo del ítem contiene alguna, se descarta:
+# el pedido explícito fue no mostrar productos sin stock.
+_SIN_STOCK = [
+    "sin stock",
+    "agotado",
+    "sin existencia",
+    "no disponible",
+    "sold out",
+    "fuera de stock",
+    "no hay stock",
+    "sin unidades disponibles",
+    "producto agotado",
+]
+
 
 def _tokens_relevantes(consulta: str) -> List[str]:
     return [
@@ -32,6 +50,23 @@ def _tokens_relevantes(consulta: str) -> List[str]:
         for t in _normalizar_texto(consulta).split()
         if len(t) >= 3 and t not in _STOPWORDS
     ]
+
+
+def _esta_sin_stock(texto_item: str) -> bool:
+    texto = _normalizar_texto(texto_item)
+    return any(frase in texto for frase in _SIN_STOCK)
+
+
+def _texto_precio_vigente(precio_el) -> str:
+    """Devuelve el texto del elemento de precio ignorando cualquier precio
+    tachado (<del>/<s>/<strike>, típico de "antes $X ahora $Y"). Sin esto,
+    `normalizar_precio` toma el primer número que encuentra y en una
+    tarjeta con oferta eso es casi siempre el precio de lista tachado, no
+    el que se paga en realidad."""
+    copia = copy(precio_el)
+    for tachado in copia.find_all(["del", "s", "strike"]):
+        tachado.decompose()
+    return copia.get_text(" ", strip=True)
 
 
 class FuenteScraping(FuenteBase):
@@ -119,10 +154,26 @@ class FuenteScraping(FuenteBase):
 
         descartados_por_precio = 0
         descartados_por_relevancia = 0
+        descartados_por_stock = 0
         resultados: List[ResultadoPrecio] = []
 
         for item in items:
-            nombre_el = item.select_one(self.selector_nombre)
+            if _esta_sin_stock(item.get_text(" ", strip=True)):
+                descartados_por_stock += 1
+                continue
+
+            # Con selectores "unión" a veces matchean dos elementos del
+            # mismo ítem: el <a>/<div> que envuelve toda la tarjeta (nombre
+            # + precio + stock + botón, todo junto) y, más adentro, un
+            # elemento angosto con el nombre solo. select_one() se queda
+            # con el primero en orden de documento, que suele ser el
+            # wrapper grande. Nos quedamos con el de texto más corto entre
+            # los que matchean, porque el nombre real de un vino nunca es
+            # tan largo como una tarjeta completa.
+            candidatos_nombre = [
+                el for el in item.select(self.selector_nombre) if el.get_text(strip=True)
+            ]
+            nombre_el = min(candidatos_nombre, key=lambda el: len(el.get_text(strip=True))) if candidatos_nombre else None
             precio_el = item.select_one(self.selector_precio)
             if nombre_el is None or precio_el is None:
                 continue
@@ -135,7 +186,7 @@ class FuenteScraping(FuenteBase):
                 descartados_por_relevancia += 1
                 continue
 
-            precio = normalizar_precio(precio_el.get_text(" ", strip=True))
+            precio = normalizar_precio(_texto_precio_vigente(precio_el))
             if precio is None or not (_PRECIO_MIN <= precio <= _PRECIO_MAX):
                 descartados_por_precio += 1
                 continue
@@ -160,11 +211,12 @@ class FuenteScraping(FuenteBase):
         if not resultados:
             logger.debug(
                 "%s: %s matcheó %d ítem(s) pero ninguno quedó "
-                "(%d por relevancia, %d por precio fuera de rango)",
+                "(%d por relevancia, %d por precio fuera de rango, %d sin stock)",
                 self.nombre,
                 url,
                 len(items),
                 descartados_por_relevancia,
                 descartados_por_precio,
+                descartados_por_stock,
             )
         return resultados

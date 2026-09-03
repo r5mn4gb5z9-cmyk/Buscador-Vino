@@ -130,7 +130,31 @@ FUENTES_INFO_REGIONALES = [
     {"nombre": "Aromas del Tonel", "tipo": "vinoteca", "region": "Buenos Aires (Bahía Blanca)", "base_url": "https://aromasdeltonel.mitiendanube.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
 ]
 
-FUENTES_INFO = FUENTES_INFO + FUENTES_INFO_REGIONALES
+# Fuentes pedidas puntualmente por el usuario (verificadas en vivo antes de
+# sumarlas): "Ligier" y "Grand Cru" ya estaban en FUENTES_INFO de arriba
+# (Vinoteca Ligier / Grand Cru), así que no se duplican. De las 13
+# restantes, 5 no tienen tienda online funcional pese a la publicidad de
+# cada sitio (Cowi, Clos du Somm y Le Bouchon Recoleta no tienen catálogo
+# ni carrito; Frappé está "en mantenimiento"; Siete Spirits tiene el sitio
+# roto: certificado SSL inválido en el dominio raíz y la versión con "www"
+# devuelve una respuesta vacía) — esas quedaron en `directorio.py` en vez
+# de acá. "Pau Perasso" no es una vinoteca/bodega con canal propio: es una
+# marca personal de una sommelier que se vende a través de terceros (ej.
+# Vinicius Vinos Online), así que no se sumó en ningún lado.
+FUENTES_INFO_PEDIDAS = [
+    {"nombre": "Tonel Privado", "tipo": "vinoteca", "base_url": "https://www.tonelprivado.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Go Bar", "tipo": "vinoteca", "base_url": "https://www.gobar.com.ar", "envio_nacional": True, "plataformas": ["vtex"]},
+    {"nombre": "Bien de Vinos", "tipo": "vinoteca", "base_url": "https://www.biendevinos.com", "envio_nacional": True, "plataformas": ["tiendanube"]},
+    {"nombre": "La Cava de Lucía", "tipo": "importador", "base_url": "https://www.lacavadelucia.com", "plataformas": ["tiendanube"]},
+    {"nombre": "Enófilo", "tipo": "vinoteca", "base_url": "https://enofilo.com.ar", "envio_nacional": True, "plataformas": ["woocommerce"]},
+    {"nombre": "Romanée Wine Experience", "tipo": "importador", "base_url": "https://romanee-wines.com", "plataformas": ["woocommerce"]},
+    # jcpsommelier.com.ar: su buscador es JS del lado del cliente (ver nota
+    # en plataformas.py), así que usa la portada como catálogo en vez de
+    # una búsqueda real.
+    {"nombre": "JCP Sommelier", "tipo": "vinoteca", "base_url": "https://www.jcpsommelier.com.ar", "plataformas": ["vitrina_home"]},
+]
+
+FUENTES_INFO = FUENTES_INFO + FUENTES_INFO_REGIONALES + FUENTES_INFO_PEDIDAS
 
 
 def _factor_demo(nombre: str) -> float:

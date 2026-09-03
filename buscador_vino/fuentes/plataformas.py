@@ -20,6 +20,16 @@ PATRONES_BUSQUEDA = {
     # Confirmado en vivo contra elmercadodebebidas.com.ar (Odoo 17): el
     # buscador de catálogo usa este patrón y devuelve resultados server-side.
     "odoo": "{base}/shop?search={query}",
+    # Confirmado en vivo contra jcpsommelier.com.ar: plataforma de e-commerce
+    # sin identificar (clases "block-products-feed__*", no es ninguna de
+    # las 6 de arriba), pero con este mismo patrón de búsqueda por query.
+    "search_generico": "{base}/search?q={query}",
+    # jcpsommelier.com.ar tiene un buscador propio, pero devuelve los
+    # resultados por JavaScript del lado del cliente (el HTML estático no
+    # trae productos). En vez de descartar la fuente entera, se usa la
+    # portada como catálogo — siempre trae los mismos productos
+    # destacados, así que el filtro de relevancia igual hace su trabajo.
+    "vitrina_home": "{base}/",
 }
 
 SELECTOR_ITEM = ", ".join(
@@ -37,6 +47,7 @@ SELECTOR_ITEM = ", ".join(
         "div.product",
         "li.item-product",
         "div.oe_product",  # Odoo
+        "div.block-products-feed__product",  # plataforma de JCP Sommelier
     ]
 )
 
@@ -48,12 +59,14 @@ SELECTOR_NOMBRE = ", ".join(
         ".card__heading",
         ".product-card__title",
         "a.js-item-name",
+        ".js-item-name",  # algunos temas de Tiendanube lo ponen en un span/div, no un <a>
         ".item-name",
         ".vtex-product-summary-2-x-productNameContainer",
         "a.full-unstyled-link",
         "h3.product-name",
         ".product-title",
         ".o_wsale_products_item_title",  # Odoo
+        ".block-products-feed__product-name",  # plataforma de JCP Sommelier
     ]
 )
 
@@ -70,6 +83,7 @@ SELECTOR_PRECIO = ", ".join(
         ".precio",
         ".product-price",
         ".oe_currency_value",  # Odoo
+        ".block-products-feed__product-price",  # plataforma de JCP Sommelier
     ]
 )
 
@@ -82,6 +96,7 @@ SELECTOR_LINK = ", ".join(
         "a.card__heading",
         "a.js-item-name",
         "a.oe_product_image_link",  # Odoo
+        "a.block-products-feed__product-link",  # plataforma de JCP Sommelier
         "a",
     ]
 )

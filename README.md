@@ -114,7 +114,7 @@ Probá primero con `--demo`:
 python main.py "Rutini Malbec" --demo
 ```
 
-## Fuentes configuradas (55 con tienda online + 31 solo contacto directo)
+## Fuentes configuradas (62 con tienda online + 36 solo contacto directo)
 
 En `buscador_vino/fuentes/config.py`, agrupadas por tipo, las 30 fuentes
 "grandes" originales:
@@ -165,14 +165,37 @@ esas tiendas renderizan el catálogo con JavaScript del lado del cliente,
 así que un scraper de HTML estático como este no les puede leer los
 resultados de búsqueda.
 
+### Fuentes puntuales agregadas a pedido
+
+`FUENTES_INFO_PEDIDAS` en `config.py` suma 7 fuentes más pedidas
+específicamente (Tonel Privado, Go Bar, Bien de Vinos, La Cava de Lucía,
+Enófilo, Romanée Wine Experience, JCP Sommelier), todas con tienda online
+verificada en vivo. De otras 13 pedidas en el mismo lote: "Ligier" y
+"Grand Cru" ya estaban en la lista original (no se duplicaron); Cowi,
+Clos du Somm, Le Bouchon Recoleta, Frappé y Siete Spirits no tienen
+catálogo/carrito funcional pese a su publicidad (quedaron en el
+directorio de contacto directo, ver abajo — Frappé tiene el sitio propio
+"en mantenimiento" y Siete Spirits tiene errores técnicos: SSL vencido en
+el dominio raíz y respuesta vacía en la versión con "www"); y "Pau
+Perasso" no es una vinoteca/bodega con canal propio, es una marca
+personal de una sommelier vendida por terceros, así que no se sumó en
+ningún lado.
+
+JCP Sommelier tiene una particularidad: su buscador devuelve los
+resultados por JavaScript del lado del cliente (el HTML estático no trae
+productos), así que en vez de buscar de verdad usa su portada como
+catálogo — siempre expone los mismos productos destacados, pero el
+filtro de relevancia igual separa lo que sirve de lo que no (ver
+`"vitrina_home"` en `plataformas.py`).
+
 ### Bodegas boutique sin tienda online: directorio de contacto directo
 
 Muchas bodegas chicas venden solo por WhatsApp/Instagram, sin carrito de
 compra. En vez de dejarlas afuera, están en
-`buscador_vino/fuentes/directorio.py` (`BODEGAS_SIN_TIENDA`, 31 bodegas y
+`buscador_vino/fuentes/directorio.py` (`BODEGAS_SIN_TIENDA`, 36 bodegas y
 vinotecas en Córdoba, Entre Ríos, La Pampa, Salta, La Rioja, Catamarca,
-Neuquén, Río Negro/Viedma, la Costa y Sierra de la Ventana, Mendoza y San
-Juan) y se listan aparte, marcadas como "contactar directo":
+Neuquén, Río Negro/Viedma, la Costa y Sierra de la Ventana, Mendoza, San
+Juan y CABA) y se listan aparte, marcadas como "contactar directo":
 
 ```bash
 python main.py --directorio
@@ -180,6 +203,23 @@ python main.py --directorio --region "Salta"
 ```
 
 En la web están en `/directorio` (con link desde la página principal).
+
+## Filtro de stock
+
+Un ítem que la página marca como sin stock ("Agotado", "Sin stock", "No
+disponible", "Sold out", etc. — ver `_SIN_STOCK` en
+`buscador_vino/fuentes/scraping.py`) se descarta automáticamente y nunca
+aparece en los resultados. Es un chequeo de texto sobre la tarjeta del
+producto (no hay una forma más confiable de leer el stock real que
+funcione igual en todas las plataformas), así que una fuente que muestre
+la falta de stock de otra manera (ej. un ícono sin texto) puede no
+detectarse — en ese caso el ítem se sigue mostrando igual.
+
+De paso, si una tarjeta muestra un precio tachado junto al precio de
+oferta (ej. `~~$164.700~~ $127.700`), el comparador ahora toma el precio
+vigente (el de oferta), no el tachado — antes tomaba el primer número que
+encontraba en el texto, que en ese patrón casi siempre es el precio de
+lista viejo, no el que se paga.
 
 ## ⚠️ Importante: verificar las fuentes antes de usar en modo real
 

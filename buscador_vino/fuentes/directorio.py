@@ -66,6 +66,14 @@ DIRECTORIO_INFO = [
     {"nombre": "Alma Austral", "tipo": "bodega", "region": "Mendoza (Chacras de Coria)", "medio": "instagram", "contacto": "@almaaustral", "url": "https://instagram.com/almaaustral"},
     # --- San Juan (boutique sin tienda online) ----------------------------------------
     {"nombre": "Casa Montes", "tipo": "bodega", "region": "San Juan (Caucete)", "medio": "instagram", "contacto": "@casamontesok", "url": "https://instagram.com/casamontesok"},
+    # --- Vinotecas/wine bars de CABA pedidas puntualmente, sin tienda online --------
+    # verificadas en vivo: pese a la publicidad de cada sitio, ninguna tiene
+    # catálogo ni carrito de compra funcional al día de esta investigación.
+    {"nombre": "Cowi", "tipo": "vinoteca", "region": "Buenos Aires (Palermo/Belgrano)", "medio": "instagram", "contacto": "@cowi_ba", "url": "https://instagram.com/cowi_ba"},
+    {"nombre": "Clos du Somm", "tipo": "vinoteca", "region": "Buenos Aires (CABA)", "medio": "instagram", "contacto": "@clos_du_somm", "url": "https://instagram.com/clos_du_somm"},
+    {"nombre": "Le Bouchon Recoleta", "tipo": "vinoteca", "region": "Buenos Aires (Recoleta)", "medio": "instagram", "contacto": "@lebouchon.ar", "url": "https://instagram.com/lebouchon.ar"},
+    {"nombre": "Frappé Wine Store", "tipo": "vinoteca", "region": "Buenos Aires (Florida Oeste)", "medio": "instagram", "contacto": "@frappewinestore (sitio propio en mantenimiento; también vende por MercadoLibre)", "url": "https://instagram.com/frappewinestore"},
+    {"nombre": "Siete Spirits", "tipo": "importador", "region": "Buenos Aires (CABA)", "medio": "email", "contacto": "consultas@sietespirits.com · tel. 4554-4200 (sitio propio con errores técnicos: SSL vencido / respuesta vacía)", "url": "mailto:consultas@sietespirits.com"},
 ]
 
 BODEGAS_SIN_TIENDA: List[ContactoDirecto] = [
