@@ -86,8 +86,35 @@ def test_detectar_variedad_no_corta_la_frase_por_la_palabra_suelta():
     assert detectar_variedad("Cabernet Franc Reserva") == "cabernet franc"
 
 
-def test_detectar_variedad_sin_match_devuelve_none():
-    assert detectar_variedad("Champagne Rosado Importado") is None
+def test_detectar_variedad_sin_ninguna_palabra_candidata_devuelve_none():
+    # "vino" y "reserva" se descartan (palabra vacía y descriptor de
+    # línea), "2020" se descarta por ser un año: no queda ninguna
+    # candidata razonable a variedad.
+    assert detectar_variedad("Vino Reserva 2020") is None
+
+
+def test_detectar_variedad_funciona_para_cepas_fuera_de_la_lista_conocida():
+    # El pedido explícito era que esto funcione para CUALQUIER cepa que
+    # aparezca en el nombre, no solo las de la lista fija (_VARIEDADES).
+    # "Carmenere" no está en esa lista a propósito, para probar el
+    # fallback: se descarta "bodega" (palabra vacía) y queda "carmenere"
+    # como última palabra candidata.
+    assert detectar_variedad("Bodega Chacra Carmenere") == "carmenere"
+
+
+def test_detectar_variedad_ignora_anio_y_descriptores_de_linea():
+    # "trapiche" y "torrontes" son candidatas, pero "reserva" y "2022" se
+    # descartan — así que el resultado tiene que ser la variedad real
+    # ("torrontes"), no el descriptor de línea que viene después.
+    assert detectar_variedad("Trapiche Torrontés Reserva 2022") == "torrontes"
+
+
+def test_detectar_variedad_ignora_formato_de_botella():
+    # "750ml" no debería poder colarse como "variedad" solo por ser la
+    # última palabra: es el tamaño de la botella, no la cepa. Se usa
+    # "Carmenere" (fuera de la lista fija) para que la prueba pase por el
+    # fallback en vez de resolverse ya en el primer nivel.
+    assert detectar_variedad("Bodega Chacra Carmenere 750ml") == "carmenere"
 
 
 def test_elegir_similares_excluye_los_ya_encontrados_y_ordena_por_precio():

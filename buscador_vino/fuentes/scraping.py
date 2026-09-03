@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from ..models import ResultadoPrecio
 from ..parsing import normalizar_precio
+from ..texto import PALABRAS_VACIAS_VINO
 from ..texto import normalizar as _normalizar_texto
 from .base import FuenteBase
 
@@ -23,8 +24,6 @@ _USER_AGENT = (
 # combo/caja, o un elemento que no era un precio) y se descarta.
 _PRECIO_MIN = 500
 _PRECIO_MAX = 2_000_000
-
-_STOPWORDS = {"de", "del", "la", "el", "los", "las", "y", "vino", "vinos", "bodega"}
 
 # Frases típicas de "sin stock" en vinotecas/bodegas argentinas (varias
 # plataformas las muestran como texto plano en la misma tarjeta del
@@ -48,7 +47,7 @@ def _tokens_relevantes(consulta: str) -> List[str]:
     return [
         t
         for t in _normalizar_texto(consulta).split()
-        if len(t) >= 3 and t not in _STOPWORDS
+        if len(t) >= 3 and t not in PALABRAS_VACIAS_VINO
     ]
 
 

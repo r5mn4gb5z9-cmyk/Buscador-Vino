@@ -57,13 +57,24 @@ Opciones:
 - `-v` / `--verbose` — muestra logs de qué fuente falló y por qué.
 
 Además de la tabla de precios, si detecta la variedad de uva en la
-búsqueda (Malbec, Cabernet Sauvignon, Bonarda, etc.) agrega una sección
-**"También te puede gustar"** con otros vinos de la misma variedad y
-precio parecido — armada con nuestras propias fuentes, no con Vivino: sus
-términos de servicio prohíben el scraping automatizado y no tienen API
-pública gratuita, así que en vez de eso comparamos variedad + precio
-dentro de las fuentes que ya tenemos (ver `buscador_vino/variedades.py` y
-`elegir_similares` en `buscador_vino/comparador.py`).
+búsqueda agrega una sección **"También te puede gustar"** con otros vinos
+de la misma variedad y precio parecido — armada con nuestras propias
+fuentes, no con Vivino: sus términos de servicio prohíben el scraping
+automatizado y no tienen API pública gratuita, así que en vez de eso
+comparamos variedad + precio dentro de las fuentes que ya tenemos (ver
+`buscador_vino/variedades.py` y `elegir_similares` en
+`buscador_vino/comparador.py`).
+
+La detección de variedad no depende solo de una lista fija: primero
+prueba contra una lista de las más comunes (Malbec, Cabernet Sauvignon,
+Bonarda, etc., para reconocerlas con precisión y con un nombre lindo), y
+si ninguna matchea, adivina la variedad tomando la última palabra
+relevante de la búsqueda (después de descartar el año, palabras vacías
+como "bodega"/"vino", y descriptores típicos de línea/calidad como
+"reserva", "premium", tamaño de botella, etc.). Así funciona igual de
+bien para Carmenere, Petit Verdot, o cualquier cepa que no esté en la
+lista fija — probado contra fuentes reales: "Rutini Malbec" y "Petit
+Verdot" arman la sección igual de bien.
 
 ## Envío a todo el país
 
@@ -303,7 +314,7 @@ buscador_vino/
   models.py           # ResultadoPrecio y ContactoDirecto (bodegas sin tienda online)
   texto.py             # normalización de texto compartida (sin tildes/mayúsculas)
   parsing.py           # normaliza texto de precio ("$ 15.990,50") a float
-  variedades.py         # detecta la variedad de uva de la búsqueda (Malbec, Cabernet Sauvignon, ...)
+  variedades.py         # detecta la variedad de uva de la búsqueda (lista conocida + fallback genérico)
   favoritos.py           # persistencia de "mis favoritos" en favoritos.json
   comparador.py         # ejecuta todas las fuentes en paralelo, ordena por precio, "también te puede gustar" y favoritos
   tabla.py             # arma el resumen "más barato" + la tabla completa + directorio + favoritos
