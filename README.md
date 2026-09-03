@@ -362,6 +362,87 @@ hay una versión de demostración publicada como página web (con precios
 simulados, igual que el modo `--demo`): pedísela a quien te compartió este
 repo, o generá una nueva con Claude Code a partir de este proyecto.
 
+## Desplegar en Railway (acceso desde el celu fuera de casa)
+
+La WiFi solo sirve si el celu está en la misma red que la compu. Para
+entrar desde cualquier lado (datos móviles, otra WiFi) hace falta un
+servidor accesible por internet — [Railway](https://railway.app) es una
+opción simple para eso, con un plan gratis/de bajo costo que alcanza de
+sobra para uso personal.
+
+El repo ya está preparado para Railway:
+
+- `Procfile` — le dice a Railway cómo arrancar la app: con
+  [gunicorn](https://gunicorn.org/) (servidor de producción) en vez del
+  servidor de desarrollo de Flask, que la propia documentación de Flask
+  dice que no hay que usar expuesto a internet.
+- `requirements.txt` — incluye `gunicorn`.
+- El modo debug de Flask (`FLASK_DEBUG`) está **apagado por default**:
+  dejarlo prendido en un servidor público es un riesgo de seguridad real
+  (el debugger interactivo de Werkzeug permite ejecutar código arbitrario
+  si algo tira un error sin atrapar). Railway nunca lo prende porque no
+  define esa variable.
+- `favoritos.json` vive en el disco del contenedor, que en Railway es
+  **efímero**: se borra en cada redeploy (cada vez que se sube código
+  nuevo) o reinicio. Para uso ocasional no pasa nada — se vuelve a armar
+  la lista agregando de nuevo. Si te importa que sobreviva a los
+  redeploys, más abajo está cómo montar un volumen persistente
+  (`FAVORITOS_PATH`).
+
+### Paso a paso del lado de Railway
+
+Esta parte no la puedo hacer por vos — requiere tu cuenta y tus
+credenciales. Screenshots aparte, los pasos son siempre los mismos:
+
+1. **Subí el proyecto a GitHub** si todavía no lo hiciste (Railway
+   despliega conectándose a un repo de GitHub). Si ya tenés el repo local
+   con git, creá un repo vacío en GitHub y hacé `git push`.
+2. **Creá una cuenta en [railway.app](https://railway.app)** — podés
+   entrar directo con tu cuenta de GitHub (recomendado, así el paso
+   siguiente es más directo).
+3. **"New Project" → "Deploy from GitHub repo"** y elegí este
+   repositorio. La primera vez te va a pedir autorizar a Railway a leer
+   tus repos de GitHub (podés limitarlo a "Only select repositories" y
+   elegir solo este).
+4. Railway detecta que es un proyecto Python (por `requirements.txt`) y
+   arma la imagen solo. Con el `Procfile` ya en el repo, no hace falta
+   configurar un "Start Command" a mano — pero si Railway te lo pide o
+   querés confirmarlo: **Settings → Deploy → Start Command** debería
+   quedar `gunicorn web.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 300`.
+5. **Settings → Networking → Generate Domain.** Ahí Railway te da una URL
+   pública (`algo.up.railway.app`) — esa es la que abrís desde el celu,
+   con datos o cualquier WiFi. No hace falta configurar HTTPS a mano,
+   Railway ya lo resuelve.
+6. Esperá a que termine el deploy (unos minutos la primera vez) y probá
+   la URL desde el navegador del celu. Si algo falla, **Deployments →
+   (el deploy más reciente) → View Logs** muestra el error.
+
+**Variables de entorno** (Settings → Variables, opcional):
+
+- `PORT` — no hace falta tocarla, Railway la define sola.
+- `FAVORITOS_PATH` — solo si vas a usar un volumen persistente (ver
+  abajo).
+
+**Para que los favoritos sobrevivan a un redeploy (opcional):**
+
+1. En el proyecto de Railway: **+ New → Volume**, y montalo en, por
+   ejemplo, `/data`.
+2. Agregá la variable de entorno `FAVORITOS_PATH=/data/favoritos.json`.
+3. Redeployá (Railway lo hace solo al guardar la variable). A partir de
+   ahí `favoritos.json` vive en el volumen, no en el disco efímero del
+   contenedor.
+
+**Cada vez que quieras actualizar la versión de Railway** con cambios
+nuevos del código: alcanza con hacer `git push` a la rama que Railway
+está siguiendo — el deploy se dispara solo.
+
+**Nota sobre `/favoritos`:** esa página busca cada favorito guardado uno
+por uno contra las fuentes reales (no en simultáneo, para no saturar los
+sitios), así que con varios favoritos puede tardar — cada uno hasta unos
+30 segundos en el peor caso. El `--timeout 300` del `Procfile` ya
+contempla eso, pero si tenés muchos favoritos y sentís que tarda
+demasiado desde el celu, avisame y bajamos el timeout por favorito.
+
 ## Tests
 
 ```bash

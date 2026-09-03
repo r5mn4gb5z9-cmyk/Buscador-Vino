@@ -141,4 +141,11 @@ if __name__ == "__main__":
     # AirPlay Receiver de Control Center, así que el launcher de escritorio
     # (ver iniciar_buscador.command) lo levanta en otro puerto por default.
     puerto = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=puerto, debug=True)
+    # El modo debug de Flask/Werkzeug expone un debugger interactivo que
+    # permite ejecutar código arbitrario si alguien llega a un error sin
+    # atrapar — está bien para desarrollo local, pero nunca debe quedar
+    # prendido en un servidor expuesto a internet (ej. Railway). Se apaga
+    # por default y solo se prende si se pide explícitamente con
+    # FLASK_DEBUG=1 (el launcher de escritorio lo hace).
+    debug = os.environ.get("FLASK_DEBUG") == "1"
+    app.run(host="0.0.0.0", port=puerto, debug=debug)

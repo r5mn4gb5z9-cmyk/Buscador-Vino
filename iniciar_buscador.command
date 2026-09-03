@@ -20,7 +20,7 @@ if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 
 echo "Iniciando Comparador de Vinos en $URL ..."
-PORT=$PORT python3 web/app.py &
+PORT=$PORT FLASK_DEBUG=1 python3 web/app.py &
 SERVER_PID=$!
 
 for i in $(seq 1 30); do
