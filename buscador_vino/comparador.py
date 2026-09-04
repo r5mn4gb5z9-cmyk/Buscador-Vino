@@ -66,14 +66,31 @@ def elegir_similares(
     los vinos que ya aparecen en `resultados_originales` (mismo nombre
     normalizado) y se eligen los `max_resultados` con precio más cercano
     al del resultado más barato, devueltos ordenados de menor a mayor.
+
+    Como `detectar_variedad` a veces adivina (no toda búsqueda tiene una
+    cepa de una lista conocida), puede confundir el nombre de una
+    línea/blend propio de una bodega con una variedad real — ej. buscar
+    "Achaval Ferrer Quimera Tinto 2021" detecta "quimera" como si fuera
+    una cepa, cuando en realidad es el nombre de esa línea puntual. El
+    síntoma es que el pool entero termina siendo otros productos de esa
+    misma línea vendidos por UNA sola fuente, no vinos parecidos de
+    verdad. Una variedad de uva real aparece en el catálogo de varias
+    fuentes distintas (no solo la que vendía el vino buscado); si el pool
+    viene de una sola, es más probable que sea el nombre de una línea que
+    una cepa, así que no se muestra nada antes que mostrar productos que
+    no tienen que ver.
     """
     if not resultados_originales or not pool_variedad:
+        return []
+
+    if len({r.fuente for r in pool_variedad}) < 2:
         return []
 
     ya_encontrados = {normalizar(r.vino) for r in resultados_originales}
     precio_referencia = resultados_originales[0].precio
 
     candidatos = [r for r in pool_variedad if normalizar(r.vino) not in ya_encontrados]
+
     candidatos.sort(key=lambda r: abs(r.precio - precio_referencia))
 
     similares = candidatos[:max_resultados]

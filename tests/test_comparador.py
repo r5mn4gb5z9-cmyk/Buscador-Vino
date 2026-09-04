@@ -118,12 +118,12 @@ def test_detectar_variedad_ignora_formato_de_botella():
 
 
 def test_elegir_similares_excluye_los_ya_encontrados_y_ordena_por_precio():
-    originales = [_resultado("Rutini Malbec", 10_000)]
+    originales = [_resultado("Rutini Malbec", 10_000, fuente="Vinoteca A")]
     pool = [
-        _resultado("Rutini Malbec", 10_000),  # ya está en originales, se descarta
-        _resultado("Trapiche Malbec", 15_000),
-        _resultado("Zuccardi Malbec", 9_000),
-        _resultado("Luigi Bosca Malbec", 50_000),  # muy lejos en precio
+        _resultado("Rutini Malbec", 10_000, fuente="Vinoteca A"),  # ya está en originales, se descarta
+        _resultado("Trapiche Malbec", 15_000, fuente="Vinoteca B"),
+        _resultado("Zuccardi Malbec", 9_000, fuente="Vinoteca C"),
+        _resultado("Luigi Bosca Malbec", 50_000, fuente="Vinoteca D"),  # muy lejos en precio
     ]
 
     similares = elegir_similares(originales, pool, max_resultados=2)
@@ -134,6 +134,37 @@ def test_elegir_similares_excluye_los_ya_encontrados_y_ordena_por_precio():
 def test_elegir_similares_sin_pool_devuelve_vacio():
     originales = [_resultado("Rutini Malbec", 10_000)]
     assert elegir_similares(originales, []) == []
+
+
+def test_elegir_similares_no_muestra_nada_si_el_pool_es_de_una_sola_fuente():
+    # Bug real: buscar "Achaval Ferrer Quimera Tinto 2021" detectaba
+    # "quimera" como si fuera una variedad de uva, cuando en realidad es
+    # el nombre de esa línea puntual de la bodega. El pool resultante
+    # eran otros productos de esa misma línea, todos vendidos por la
+    # única fuente que la tiene — no vinos parecidos de otras fuentes.
+    # Una variedad de uva real aparece en varias fuentes distintas, así
+    # que si el pool viene de una sola, no se muestra nada.
+    originales = [_resultado("Achaval Ferrer Quimera Tinto 2021", 55_250, fuente="Rebellion")]
+    pool = [
+        _resultado("Achaval Ferrer Quimera Tinto 2021", 55_250, fuente="Rebellion"),
+        _resultado("Achaval Ferrer Quimera Blanco 2023", 55_250, fuente="Rebellion"),
+        _resultado("Achaval Ferrer Quimera Single Vineyard Diamante 2022", 72_250, fuente="Rebellion"),
+        _resultado("Achaval Ferrer Quimera Single Vineyard Memento 2022", 72_250, fuente="Rebellion"),
+    ]
+
+    assert elegir_similares(originales, pool) == []
+
+
+def test_elegir_similares_muestra_resultados_si_el_pool_es_de_varias_fuentes():
+    originales = [_resultado("Rutini Malbec", 10_000, fuente="Vinoteca A")]
+    pool = [
+        _resultado("Rutini Malbec", 10_000, fuente="Vinoteca A"),
+        _resultado("Trapiche Malbec", 15_000, fuente="Vinoteca B"),
+    ]
+
+    similares = elegir_similares(originales, pool)
+
+    assert [r.vino for r in similares] == ["Trapiche Malbec"]
 
 
 def test_fuente_simulada_propaga_envio_nacional_al_resultado():
